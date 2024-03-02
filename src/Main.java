@@ -9,7 +9,7 @@ public class Main
         String filePath = args[0];
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
         String line = "";
-        while(reader.readLine()!=null){
+        while((line = reader.readLine())!=null){
             System.out.println(line);
         }
 
