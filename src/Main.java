@@ -32,10 +32,12 @@ public class Main
                 int type = t.getType();
                 Vocabulary vocabulary = sysYLexer.getVocabulary();
                 String typeName = vocabulary.getSymbolicName(type);
-                if(text.startsWith("0x")||text.startsWith("0X")){
-                    text = String.valueOf(Integer.parseInt(text.substring(2),16));
-                }else if(text.startsWith("0")&&text.length()>1){
-                    text = String.valueOf(Integer.parseInt(text.substring(1),8));
+                if(Objects.equals(typeName, "INTEGER_CONST")){
+                    if(text.startsWith("0x")||text.startsWith("0X")){
+                        text = String.valueOf(Integer.parseInt(text.substring(2),16));
+                    }else if(text.startsWith("0")&&text.length()>1){
+                        text = String.valueOf(Integer.parseInt(text.substring(1),8));
+                    }
                 }
                 System.err.println(typeName+" "+text+" at Line "+line+'.');
             }
