@@ -22,17 +22,23 @@ public class Main
         sysYLexer.addErrorListener(myErrorListener);
 
         List<? extends Token> myTokens = sysYLexer.getAllTokens();
-        for(Token t : myTokens){
-            String text = t.getText();
-            int line = t.getLine();
-            int type = t.getType();
-            Vocabulary vocabulary = sysYLexer.getVocabulary();
-            String typeName = vocabulary.getSymbolicName(type);
-            if(!Objects.equals(typeName, "WS")&& !Objects.equals(typeName, "MULTILINE_COMMENT") && !Objects.equals(typeName, "LINE_COMMENT")){
+
+        if(myErrorListener.isError()){
+            myErrorListener.printLexerErrorInformation();
+        } else{
+            for(Token t : myTokens){
+                String text = t.getText();
+                int line = t.getLine();
+                int type = t.getType();
+                Vocabulary vocabulary = sysYLexer.getVocabulary();
+                String typeName = vocabulary.getSymbolicName(type);
+                if(text.startsWith("0x")||text.startsWith("0X")){
+                    text = String.valueOf(Integer.parseInt(text.substring(2),16));
+                }else if(text.startsWith("0")&&text.length()>1){
+                    text = String.valueOf(Integer.parseInt(text.substring(1),8));
+                }
                 System.err.println(typeName+" "+text+" at Line "+line+'.');
             }
         }
-
-
     }
 }
