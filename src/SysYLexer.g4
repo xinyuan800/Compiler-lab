@@ -46,9 +46,9 @@ WS: [ \r\n\t]+ -> skip
    ;
 
 LINE_COMMENT
-   : '//' .*? '\n'
+   : '//' .*? '\n' -> skip
    ;
 
 MULTILINE_COMMENT
-   : '/*' .*? '*/'
+   : '/*' .*? '*/' -> skip
    ;
