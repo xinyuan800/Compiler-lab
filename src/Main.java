@@ -24,7 +24,7 @@ public class Main
         List<? extends Token> myTokens = sysYLexer.getAllTokens();
 
         if(myErrorListener.isError()){
-            //myErrorListener.printLexerErrorInformation();
+            myErrorListener.printLexerErrorInformation();
         } else{
             for(Token t : myTokens){
                 String text = t.getText();
