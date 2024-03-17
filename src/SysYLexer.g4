@@ -6,7 +6,7 @@ VOID : 'void';
 IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
-BREAk : 'break';
+BREAK : 'break';
 CONTINUE : 'continue';
 RETURN : 'return';
 PLUS : '+';
