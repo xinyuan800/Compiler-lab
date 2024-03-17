@@ -42,7 +42,7 @@ IDENT : ('_' | [a-zA-Z])([0-9a-zA-Z]'_')*
 INTEGER_CONST : '0'([0-7])+ | '0'|[1-9][0-9]* | ('0x'|'0X')[0-9a-fA-F]*
    ;
 
-WS: [ \r\n\t]+
+WS: [ \r\n\t]+ -> skip
    ;
 
 LINE_COMMENT
