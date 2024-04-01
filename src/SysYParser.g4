@@ -51,7 +51,7 @@ funcFParam
     : bType IDENT ('['']'('['exp']')*)?
     ;
 block
-    : '{' blockItem '}'
+    : '{' (blockItem)* '}'
     ;
 blockItem
     : decl
