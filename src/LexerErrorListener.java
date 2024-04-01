@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.Recognizer;
 
 import java.util.ArrayList;
 
-public class ErrorListener  extends BaseErrorListener {
+public class LexerErrorListener extends BaseErrorListener {
     private boolean hasErrorInformation;
     private ArrayList<Integer> errorLine = new ArrayList<>();
 
