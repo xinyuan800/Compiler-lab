@@ -38,7 +38,7 @@ public class ParserErrorListener implements ANTLRErrorListener {
 
     public void printParserErrorInformation() {
         for(int line : errorLine){
-            System.err.println("Error type B at Line "+line+":"+"ErrorMsg");
+            System.out.println("Error type B at Line "+line+":"+"ErrorMsg");
         }
     }
 }
