@@ -1,12 +1,7 @@
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.IOException;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Objects;
 
 public class Main
 {
@@ -20,15 +15,19 @@ public class Main
         CommonTokenStream tokens = new CommonTokenStream(sysYLexer);
         SysYParser sysYParser = new SysYParser(tokens);
 
+        //add parserErrorListener
         sysYParser.removeErrorListeners();
         ParserErrorListener parserErrorListener = new ParserErrorListener();
         sysYParser.addErrorListener( parserErrorListener);
 
+        //start parser program
         ParseTree tree = sysYParser.program();
-        SysYParserBaseVisitor visitor = new SysYParserBaseVisitor();
-        visitor.visit(tree);
         if(parserErrorListener.isError()){
             parserErrorListener.printParserErrorInformation();
+        }else {
+            Visitor visitor = new Visitor();
+            visitor.visit(tree);
+
         }
     }
 

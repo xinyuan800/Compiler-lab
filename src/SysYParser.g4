@@ -14,24 +14,24 @@ decl
     :constDecl | varDecl
     ;
 constDecl
-    :'const' bType constDef (','constDef)* ';'
+    : CONST bType constDef (','constDef)* ';'
     ;
 bType
-    :'int'
+    : INT
     ;
 constDef
-    : IDENT ('['constExp']')* '=' constInitVal
+    : IDENT ('['constExp']')* ASSIGN constInitVal
     ;
 constInitVal
     : constExp
-    | '{'(constInitVal(','constInitVal)*)?')'
+    | '{'(constInitVal(','constInitVal)*)?'}'
     ;
 varDecl
     : bType varDef(','varDef)*';'
     ;
 varDef
     : IDENT ('['constExp']')*
-    | IDENT ('['constExp']')*'=' initVal
+    | IDENT ('['constExp']')* ASSIGN initVal
     ;
 initVal
     : exp
@@ -41,8 +41,8 @@ funcDef
     : funcType IDENT '('(funcFParams)?')' block
     ;
 funcType
-    : 'void'
-    | 'int'
+    : VOID
+    | INT
     ;
 funcFParams
     : funcFParam(','funcFParam)*
@@ -58,13 +58,13 @@ blockItem
     | stmt
     ;
 stmt
-    :lVal '=' exp ';'
+    :lVal ASSIGN exp ';'
     | (exp)? ';'
     | block
-     | 'if' '(' cond ')' stmt ( 'else' stmt )?
-     | 'while' '(' cond ')' stmt
-     | 'break' ';' | 'continue' ';'
-     | 'return' (exp)? ';'
+     | IF '(' cond ')' stmt ( ELSE stmt )?
+     | WHILE '(' cond ')' stmt
+     |  BREAK';' | CONTINUE ';'
+     | RETURN (exp)? ';'
      ;
 exp
    : L_PAREN exp R_PAREN
