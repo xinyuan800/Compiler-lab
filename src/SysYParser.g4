@@ -14,57 +14,57 @@ decl
     :constDecl | varDecl
     ;
 constDecl
-    : CONST bType constDef (','constDef)* ';'
+    : CONST bType constDef (COMMA constDef)* SEMICOLON
     ;
 bType
     : INT
     ;
 constDef
-    : IDENT ('['constExp']')* ASSIGN constInitVal
+    : IDENT (L_BRACKT constExp R_BRACKT)*ASSIGN constInitVal
     ;
 constInitVal
     : constExp
-    | '{'(constInitVal(','constInitVal)*)?'}'
+    | L_BRACE(constInitVal(COMMA constInitVal)*)?R_BRACE
     ;
 varDecl
-    : bType varDef(','varDef)*';'
+    : bType varDef(COMMA varDef)*SEMICOLON
     ;
 varDef
-    : IDENT ('['constExp']')*
-    | IDENT ('['constExp']')* ASSIGN initVal
+    : IDENT (L_BRACKT constExp R_BRACKT)*
+    | IDENT (L_BRACKT constExp R_BRACKT)* ASSIGN initVal
     ;
 initVal
     : exp
-    | '{'(initVal(','initVal)*)?'}'
+    | L_BRACE (initVal(COMMA initVal)*)? R_BRACE
     ;
 funcDef
-    : funcType IDENT '('(funcFParams)?')' block
+    : funcType IDENT L_PAREN(funcFParams)?R_PAREN block
     ;
 funcType
     : VOID
     | INT
     ;
 funcFParams
-    : funcFParam(','funcFParam)*
+    : funcFParam(COMMA funcFParam)*
     ;
 funcFParam
-    : bType IDENT ('['']'('['exp']')*)?
+    : bType IDENT (L_BRACKT R_BRACKT(L_BRACKT exp R_BRACKT)*)?
     ;
 block
-    : '{' (blockItem)* '}'
+    : L_BRACE(blockItem)* R_BRACE
     ;
 blockItem
     : decl
     | stmt
     ;
 stmt
-    :lVal ASSIGN exp ';'
-    | (exp)? ';'
+    :lVal ASSIGN exp SEMICOLON
+    | (exp)? SEMICOLON
     | block
-     | IF '(' cond ')' stmt ( ELSE stmt )?
-     | WHILE '(' cond ')' stmt
-     |  BREAK';' | CONTINUE ';'
-     | RETURN (exp)? ';'
+     | IF L_PAREN cond R_PAREN stmt ( ELSE stmt )?
+     | WHILE L_PAREN cond R_PAREN stmt
+     |  BREAK SEMICOLON| CONTINUE SEMICOLON
+     | RETURN (exp)? SEMICOLON
      ;
 exp
    : L_PAREN exp R_PAREN

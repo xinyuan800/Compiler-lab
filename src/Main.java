@@ -1,5 +1,6 @@
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.io.IOException;
 
@@ -25,9 +26,9 @@ public class Main
         if(parserErrorListener.isError()){
             parserErrorListener.printParserErrorInformation();
         }else {
-            Visitor visitor = new Visitor();
-            visitor.visit(tree);
-
+            ParseTreeWalker walker = new ParseTreeWalker();
+            Listener listener = new Listener();
+            walker.walk(listener,tree);
         }
     }
 
