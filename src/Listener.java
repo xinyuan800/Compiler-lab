@@ -17,6 +17,10 @@ public class Listener extends SysYParserBaseListener {
         position = "Decl";
     }
 
+    public void exitDecl(SysYParser.DeclContext ctx){
+        position = "";
+    }
+
     @Override
     public void enterFuncDef(SysYParser.FuncDefContext ctx) {
         if (!firstLine) {
