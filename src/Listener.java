@@ -47,13 +47,7 @@ public class Listener extends SysYParserBaseListener {
     }
 
     public void visitTerminal(TerminalNode node) {
-        if (node.getText().equals(";")) {
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
-            lastPrint = ";";
-            System.out.println();
-            return;
-        }
-        if (lastPrint.equals("return")) {
+        if (lastPrint.equals("return")&&!node.getText().equals(";")) {
             System.out.print(" ");
         }
         if (position.equals("Decl")) {
@@ -64,7 +58,7 @@ public class Listener extends SysYParserBaseListener {
             if (!(node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return"))) {
                 System.out.print(" ");
             }
-        } else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals(">=") || node.getText().equals("<=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",")) {
+        } else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals(">=") || node.getText().equals("<=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",")||node.getText().equals(";")) {
             printOP(node);
         } else if (node.getSymbol().getType() == SysYLexer.INTEGER_CONST) {
             System.out.print(SGR_Name.Magenta + node.getText() + SGR_Name.Reset);
@@ -95,7 +89,7 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset + " ");
             return;
         }
-        if (!(position.equals("unaryOP"))) {
+        if (!(position.equals("unaryOP"))&&!node.getText().equals(";")) {
             if(position.equals("Decl")){
                 System.out.print(SGR_Name.Reset+" ");
                 System.out.print(SGR_Name.Underlined);
@@ -105,6 +99,9 @@ public class Listener extends SysYParserBaseListener {
             }
         } else {
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
+            if(node.getText().equals(";")){
+                System.out.println();
+            }
         }
     }
 
