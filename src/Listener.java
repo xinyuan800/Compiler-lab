@@ -7,12 +7,12 @@ public class Listener extends SysYParserBaseListener {
     private int depthOfBrackets = 0;
     private String lastPrint = "";
     private boolean firstLine = true;
-
     private boolean isNewLine = false;
     private int indentation = 0;
 
     public void enterDecl(SysYParser.DeclContext ctx) {
         position = "Decl";
+
     }
 
     public void exitDecl(SysYParser.DeclContext ctx){
@@ -71,16 +71,6 @@ public class Listener extends SysYParserBaseListener {
         position = "unaryOP";
     }
 
-    @Override
-    public void enterNumber(SysYParser.NumberContext ctx) {
-        position = "number";
-    }
-
-    @Override
-    public void exitNumber(SysYParser.NumberContext ctx) {
-        position = "";
-    }
-
     public void visitTerminal(TerminalNode node) {
         int i=0;
         if(lastPrint.equals("else")&&position.equals("stmt")&&!node.getText().equals("if")){
@@ -94,8 +84,8 @@ public class Listener extends SysYParserBaseListener {
             }
             isNewLine = false;
         }
-        if (position.equals("Decl")) {
-            System.out.print(SGR_Name.Underlined + SGR_Name.LightMagenta);
+        if(position.equals("Decl")){
+            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
         if (lastPrint.equals("return")&&!node.getText().equals(";")) {
             printSpace();
@@ -133,21 +123,18 @@ public class Listener extends SysYParserBaseListener {
 
     private void printOP(TerminalNode node) {
         if (node.getText().equals(",")) {
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset + " ");
-            return;
+            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
+            printSpace();
         }
-        if (!(position.equals("unaryOP"))&&!node.getText().equals(";")) {
-            if(position.equals("Decl")){
-                printSpace();
-                System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-                printSpace();
-            }else{
-                printSpace();
-                System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-                printSpace();
-            }
-        } else {
+        else if(node.getText().equals(";")){
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
+        }
+        else if (!(position.equals("unaryOP"))) {
+            printSpace();
+            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
+            printSpace();
+        }else{
+            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
         }
     }
 
@@ -180,7 +167,7 @@ public class Listener extends SysYParserBaseListener {
     private void printSpace(){
         System.out.print(SGR_Name.Reset+" ");
         if(position.equals("Decl")){
-            System.out.print(SGR_Name.Underlined);
+            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
     }
 
