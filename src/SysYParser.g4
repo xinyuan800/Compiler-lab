@@ -70,7 +70,7 @@ exp
    : L_PAREN exp R_PAREN
    | lVal
    | number
-   | IDENT L_PAREN funcRParams? R_PAREN
+   | IDENT L_PAREN funcRParams? R_PAREN #funcCall
    | unaryOp exp
    | exp (MUL | DIV | MOD) exp
    | exp (PLUS | MINUS) exp
