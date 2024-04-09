@@ -58,14 +58,14 @@ blockItem
     | stmt
     ;
 stmt
-    :lVal ASSIGN exp SEMICOLON #stmt1
-    | (exp)? SEMICOLON #stmt2
-    | block #stmt3
-     | IF L_PAREN cond R_PAREN stmt ( ELSE stmt )?#ifelse
-     | WHILE L_PAREN cond R_PAREN stmt #while
-     |  BREAK SEMICOLON #stmt4
-     | CONTINUE SEMICOLON #stmt5
-     | RETURN (exp)? SEMICOLON #stmt6
+    :lVal ASSIGN exp SEMICOLON
+    | (exp)? SEMICOLON
+    | block
+     | IF L_PAREN cond R_PAREN stmt ( ELSE stmt )?
+     | WHILE L_PAREN cond R_PAREN stmt
+     |  BREAK SEMICOLON
+     | CONTINUE SEMICOLON
+     | RETURN (exp)? SEMICOLON
      ;
 exp
    : L_PAREN exp R_PAREN #exp1
