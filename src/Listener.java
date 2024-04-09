@@ -1,177 +1,156 @@
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.Objects;
+import java.util.Stack;
 
 public class Listener extends SysYParserBaseListener {
-    private String position = "";
-    private int depthOfBrackets = 0;
-    private String lastPrint = "";
-    private boolean firstLine = true;
-    private boolean isNewLine = false;
 
-    private boolean isUnaryOP = false;
-    private int indentation = 0;
+    private Stack<String> position = new Stack<>();
+    private int depthOfBrackets = 0;
+
+    private boolean isFunName = false;
+
+
+    @Override
+    public void enterProgram(SysYParser.ProgramContext ctx){
+        position.push("program");
+    }
 
     public void enterDecl(SysYParser.DeclContext ctx) {
-        position = "Decl";
-
+        position.push("Decl");
     }
 
-    public void exitDecl(SysYParser.DeclContext ctx){
-        position = "";
-        System.out.println();
-        isNewLine = true;
+    @Override
+    public void exitDecl(SysYParser.DeclContext ctx) {
+        position.pop();
     }
 
+    @Override
     public void enterFuncDef(SysYParser.FuncDefContext ctx) {
-        if (!firstLine) {
-            System.out.println();
-            isNewLine = true;
-        }else{
-            firstLine = false;
-        }
+        isFunName = true;
     }
 
     @Override
     public void exitFuncDef(SysYParser.FuncDefContext ctx) {
-        System.out.println();
-        isNewLine = true;
+        isFunName = false;
     }
 
+    @Override
+    public void enterFuncFParams(SysYParser.FuncFParamsContext ctx) {
+        isFunName = false;
+    }
+
+    @Override
+    public void enterFuncCall(SysYParser.FuncCallContext ctx) {
+        isFunName = true;
+    }
+
+    @Override
+    public void exitFuncCall(SysYParser.FuncCallContext ctx) {
+        isFunName = false;
+    }
+
+    @Override
+    public void enterFuncRParams(SysYParser.FuncRParamsContext ctx) {
+        isFunName = false;
+    }
+
+    @Override
+    public void enterStmt(SysYParser.StmtContext ctx) {
+        position.push("stmt");
+    }
+
+    @Override
+    public void exitStmt(SysYParser.StmtContext ctx) {
+        position.pop();
+    }
+
+    @Override
     public void enterBlock(SysYParser.BlockContext ctx) {
-        position = "block";
+        position.push("block");
     }
 
     @Override
     public void exitBlock(SysYParser.BlockContext ctx) {
-        position = "";
+        position.pop();
     }
 
     @Override
-    public void enterBlockItem(SysYParser.BlockItemContext ctx) {
-        indentation++;
-    }
-
-    @Override
-    public void exitBlockItem(SysYParser.BlockItemContext ctx) {
-        indentation--;
-    }
-
-    public void enterStmt(SysYParser.StmtContext ctx) {
-        position = "stmt";
-    }
-
-    public void exitStmt(SysYParser.StmtContext ctx) {
-        position = "";
-        if(!isNewLine){
-            System.out.println();
-            isNewLine = true;
-        }
-    }
-
-    public void enterUnaryOp(SysYParser.UnaryOpContext ctx) {
-        isUnaryOP = true;
-    }
-
     public void visitTerminal(TerminalNode node) {
-        int i=0;
-        if(lastPrint.equals("else")&&position.equals("stmt")&&!node.getText().equals("if")){
-            System.out.println();
-            i=-4;
-            isNewLine = true;
+        if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
+            printKeyWord(node);
         }
-        if(isNewLine){
-            for(;i<4*indentation;i++){
-                printSpace();
-            }
-            isNewLine = false;
+        else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals("<=") || node.getText().equals(">=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",") || node.getText().equals(";")) {
+            printOP(node);
         }
-        if(position.equals("Decl")){
-            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
-        }else if (Objects.equals(position, "stmt")) {
+        else if (node.getSymbol().getType() == SysYLexer.INTEGER_CONST) {
+            printNumber(node);
+        }
+        else if (node.getText().equals("{") || node.getText().equals("[") || node.getText().equals("(")) {
+            depthOfBrackets++;
+            if (depthOfBrackets == 7) depthOfBrackets = 1;
+            printBracket(node);
+        }else if (node.getText().equals("}") || node.getText().equals("]") || node.getText().equals(")")) {
+            printBracket(node);
+            depthOfBrackets--;
+        }
+        else if (node.getSymbol().getType() == SysYLexer.IDENT) {
+            printIdent(node);
+        }
+    }
+
+    private void printBracket(TerminalNode node) {
+        if(position.peek().equals("Decl")){
+            System.out.print(SGR_Name.Underlined);
+        }
+        if (depthOfBrackets == 1) {
+            System.out.print(SGR_Name.LightRed );
+        } else if (depthOfBrackets == 2) {
+            System.out.print(SGR_Name.LightGreen );
+        } else if (depthOfBrackets == 3) {
+            System.out.print(SGR_Name.LightYellow );
+        } else if (depthOfBrackets == 4) {
+            System.out.print(SGR_Name.LightBlue );
+        } else if (depthOfBrackets == 5) {
+            System.out.print(SGR_Name.LightMagenta );
+        } else if (depthOfBrackets == 6) {
+            System.out.print(SGR_Name.LightCyan );
+        }
+        System.out.print(node.getText()+SGR_Name.Reset);
+    }
+
+    private void printIdent(TerminalNode node){
+        if(position.peek().equals("stmt")){
             System.out.print(SGR_Name.White);
         }
+        if (position.peek().equals("Decl")){
+            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
+        }
+        if (isFunName) {
+            System.out.print(SGR_Name.LightYellow );
+            isFunName = false;
+        }
+        System.out.print(node.getText()+SGR_Name.Reset);
+    }
 
-        if (lastPrint.equals("return")&&!node.getText().equals(";")) {
-            printSpace();
+    private void printNumber(TerminalNode node) {
+        if (position.peek().equals("Decl")) {
+            System.out.print(SGR_Name.Underlined);
         }
-        if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
-            System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
-            if (!node.getText().equals("break") &&!node.getText().equals("continue") &&!node.getText().equals("return")) {
-                printSpace();
-            }
-        } else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals(">=") || node.getText().equals("<=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",")||node.getText().equals(";")) {
-            printOP(node);
-        } else if (node.getSymbol().getType() == SysYLexer.INTEGER_CONST) {
-            System.out.print(SGR_Name.Magenta + node.getText() + SGR_Name.Reset);
-        } else if (node.getSymbol().getType() == SysYLexer.IDENT && (node.getParent() instanceof SysYParser.FuncDefContext || node.getParent() instanceof SysYParser.ExpContext)) {
-            System.out.print(SGR_Name.LightYellow + node.getText() + SGR_Name.Reset);
-        }
-        //deal with brackets
-        else if (node.getSymbol().getType() == SysYLexer.L_BRACE || node.getSymbol().getType() == SysYLexer.L_BRACKT || node.getSymbol().getType() == SysYLexer.L_PAREN) {
-            depthOfBrackets++;
-            if (depthOfBrackets == 7) {
-                depthOfBrackets = 1;
-            }
-            printBrackets(node);
-        } else if (node.getSymbol().getType() == SysYLexer.R_BRACE || node.getSymbol().getType() == SysYLexer.R_BRACKT || node.getSymbol().getType() == SysYLexer.R_PAREN) {
-            printBrackets(node);
-            depthOfBrackets--;
-        } else if(!node.getText().equals("<EOF>")) {
-            System.out.print(node.getText()+SGR_Name.Reset);
-        }
-        lastPrint = node.getText();
-        firstLine = false;
+        System.out.print(SGR_Name.Magenta + node.getText() + SGR_Name.Reset);
     }
 
     private void printOP(TerminalNode node) {
-        if (node.getText().equals(",")) {
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-            printSpace();
+        if (position.peek().equals("Decl")) {
+            System.out.print(SGR_Name.Underlined);
         }
-        else if(node.getText().equals(";")){
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
-        }
-        else if (!(isUnaryOP)) {
-            printSpace();
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-            printSpace();
-        }else{
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-        }
+        System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
     }
 
-    private void printBrackets(TerminalNode node) {
-        if(node.getText().equals("{")&&!position.equals("Decl")){
-            if(lastPrint.equals(")")){
-                System.out.print(" ");
-            }
+    private void printKeyWord(TerminalNode node) {
+        if (position.peek().equals("Decl")) {
+            System.out.print(SGR_Name.Underlined);
         }
-        if (depthOfBrackets == 1) {
-            System.out.print(SGR_Name.LightRed);
-        } else if (depthOfBrackets == 2) {
-            System.out.print(SGR_Name.LightGreen);
-        } else if (depthOfBrackets == 3) {
-            System.out.print(SGR_Name.LightYellow);
-        } else if (depthOfBrackets == 4) {
-            System.out.print(SGR_Name.LightBlue);
-        } else if (depthOfBrackets == 5) {
-            System.out.print(SGR_Name.LightMagenta);
-        } else if (depthOfBrackets == 6) {
-            System.out.print(SGR_Name.LightCyan);
-        }
-        System.out.print(node.getText() + SGR_Name.Reset);
-        if(position.equals("block")&&node.getText().equals("{")){
-            System.out.println();
-            isNewLine = true;
-        }
+        System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
     }
-
-    private void printSpace(){
-        System.out.print(SGR_Name.Reset+" ");
-        if(position.equals("Decl")){
-            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
-        }
-    }
-
 }
