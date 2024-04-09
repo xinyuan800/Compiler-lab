@@ -123,6 +123,7 @@ public class Listener extends SysYParserBaseListener {
         }
         if (isFunName) {
             System.out.print(SGR_Name.LightYellow );
+            isFunName = false;
         }
         System.out.print(node.getText()+SGR_Name.Reset);
     }
