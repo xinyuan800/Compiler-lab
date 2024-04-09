@@ -1,5 +1,7 @@
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Objects;
+
 public class Listener extends SysYParserBaseListener {
 
     private String position = "";
@@ -60,6 +62,9 @@ public class Listener extends SysYParserBaseListener {
     }
 
     private void printBracket(TerminalNode node) {
+        if(Objects.equals(position, "Decl")){
+            System.out.print(SGR_Name.Underlined);
+        }
         if (depthOfBrackets == 1) {
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
         } else if (depthOfBrackets == 2) {
