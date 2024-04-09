@@ -30,6 +30,8 @@ public class Listener extends SysYParserBaseListener {
         isFunName = false;
     }
 
+
+
     @Override
     public void enterStmt(SysYParser.StmtContext ctx) {
         depthOfStmt++;
