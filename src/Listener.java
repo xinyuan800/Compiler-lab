@@ -73,6 +73,16 @@ public class Listener extends SysYParserBaseListener {
         position = "unaryOP";
     }
 
+    @Override
+    public void enterNumber(SysYParser.NumberContext ctx) {
+        position = "number";
+    }
+
+    @Override
+    public void exitNumber(SysYParser.NumberContext ctx) {
+        position = "";
+    }
+
     public void visitTerminal(TerminalNode node) {
         int i=0;
         if(lastPrint.equals("else")&&position.equals("stmt")&&!node.getText().equals("if")){
@@ -94,7 +104,7 @@ public class Listener extends SysYParserBaseListener {
         }
         if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
             System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
-            if (!(node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return"))) {
+            if (!node.getText().equals("break") &&!node.getText().equals("continue") &&!node.getText().equals("return")) {
                 printSpace(node);
             }
         } else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals(">=") || node.getText().equals("<=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",")||node.getText().equals(";")) {
@@ -114,10 +124,10 @@ public class Listener extends SysYParserBaseListener {
         } else if (node.getSymbol().getType() == SysYLexer.R_BRACE || node.getSymbol().getType() == SysYLexer.R_BRACKT || node.getSymbol().getType() == SysYLexer.R_PAREN) {
             printBrackets(node);
             depthOfBrackets--;
-        } else if (Objects.equals(position, "stmt")) {
-            System.out.print(SGR_Name.White + node.getText() + SGR_Name.Reset);
+        }else if (Objects.equals(position, "stmt")) {
+            System.out.print(SGR_Name.White+node.getText()+SGR_Name.Reset);
         } else if (!node.getText().equals("<EOF>")) {
-            System.out.print(node.getText());
+            System.out.print(node.getText()+SGR_Name.Reset);
         }
         lastPrint = node.getText();
         firstLine = false;
