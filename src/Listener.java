@@ -30,7 +30,25 @@ public class Listener extends SysYParserBaseListener {
         isFunName = false;
     }
 
+    @Override
+    public void enterFuncFParams(SysYParser.FuncFParamsContext ctx) {
+        isFunName = false;
+    }
 
+    @Override
+    public void enterFuncCall(SysYParser.FuncCallContext ctx) {
+        isFunName = true;
+    }
+
+    @Override
+    public void exitFuncCall(SysYParser.FuncCallContext ctx) {
+        isFunName = false;
+    }
+
+    @Override
+    public void enterFuncRParams(SysYParser.FuncRParamsContext ctx) {
+        isFunName = false;
+    }
 
     @Override
     public void enterStmt(SysYParser.StmtContext ctx) {
@@ -97,13 +115,13 @@ public class Listener extends SysYParserBaseListener {
     }
 
     private void printIdent(TerminalNode node){
-        if (position.equals("Decl")) {
-            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
-        }
         if(depthOfStmt>0){
             System.out.print(SGR_Name.White);
         }
-        if (node.getParent() instanceof SysYParser.FuncDefContext || node.getParent() instanceof SysYParser.ExpContext) {
+        if (position.equals("Decl")) {
+            System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
+        }
+        if (isFunName) {
             System.out.print(SGR_Name.LightYellow );
         }
         System.out.print(node.getText()+SGR_Name.Reset);
