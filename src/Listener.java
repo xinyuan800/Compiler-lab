@@ -145,7 +145,7 @@ public class Listener extends SysYParserBaseListener {
 
     private void printBrackets(TerminalNode node) {
         if(node.getText().equals("{")&&!position.equals("Decl")){
-            if(lastPrint.equals(")")||lastPrint.equals("else")){
+            if(lastPrint.equals(")")){
                 System.out.print(" ");
             }
         }
