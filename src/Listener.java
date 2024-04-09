@@ -10,6 +10,14 @@ public class Listener extends SysYParserBaseListener {
 
     private boolean isFunName = false;
 
+    private boolean isFirstLine = true;
+
+    private boolean isWhile = false;
+
+    private boolean isIfElse = false;
+
+    private String lastPrint = "";
+
 
     @Override
     public void enterProgram(SysYParser.ProgramContext ctx){
@@ -28,6 +36,10 @@ public class Listener extends SysYParserBaseListener {
     @Override
     public void enterFuncDef(SysYParser.FuncDefContext ctx) {
         isFunName = true;
+        if(!isFirstLine){
+            System.out.println();
+            lastPrint = "\n";
+        }
     }
 
     @Override
@@ -64,6 +76,8 @@ public class Listener extends SysYParserBaseListener {
     public void exitStmt(SysYParser.StmtContext ctx) {
         position.pop();
     }
+
+    publi
 
     @Override
     public void enterBlock(SysYParser.BlockContext ctx) {
@@ -117,20 +131,29 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.LightCyan );
         }
         System.out.print(node.getText()+SGR_Name.Reset);
+        lastPrint = node.getText();
+        if(!position.peek().equals("Decl")){
+            if(node.getText().equals("{")||node.getText().equals("}")){
+                System.out.println();
+                lastPrint = "\n";
+                isFirstLine = false;
+            }
+        }
     }
 
     private void printIdent(TerminalNode node){
-        if(position.peek().equals("stmt")){
-            System.out.print(SGR_Name.White);
-        }
         if (position.peek().equals("Decl")){
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
+        }
+        if(position.peek().equals("stmt")){
+            System.out.print(SGR_Name.White);
         }
         if (isFunName) {
             System.out.print(SGR_Name.LightYellow );
             isFunName = false;
         }
         System.out.print(node.getText()+SGR_Name.Reset);
+        lastPrint = node.getText();
     }
 
     private void printNumber(TerminalNode node) {
@@ -138,6 +161,7 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined);
         }
         System.out.print(SGR_Name.Magenta + node.getText() + SGR_Name.Reset);
+        lastPrint = node.getText();
     }
 
     private void printOP(TerminalNode node) {
@@ -145,6 +169,12 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined);
         }
         System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
+        lastPrint = node.getText();
+        if(node.getText().equals(";")){
+            isFirstLine = false;
+            System.out.println();
+            lastPrint = node.getText();
+        }
     }
 
     private void printKeyWord(TerminalNode node) {
@@ -152,5 +182,6 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined);
         }
         System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
+        lastPrint = node.getText();
     }
 }
