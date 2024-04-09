@@ -42,22 +42,25 @@ public class Listener extends SysYParserBaseListener {
         if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
             printKeyWord(node);
         }
-        if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals("<=") || node.getText().equals(">=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",") || node.getText().equals(";")) {
+        else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals("<=") || node.getText().equals(">=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",") || node.getText().equals(";")) {
             printOP(node);
         }
-        if (node.getSymbol().getType() == SysYLexer.INTEGER_CONST) {
+        else if (node.getSymbol().getType() == SysYLexer.INTEGER_CONST) {
             printNumber(node);
         }
-        if (node.getText().equals("{") || node.getText().equals("[") || node.getText().equals("(")) {
+        else if (node.getText().equals("{") || node.getText().equals("[") || node.getText().equals("(")) {
             depthOfBrackets++;
             if (depthOfBrackets == 7) depthOfBrackets = 1;
             printBracket(node);
-        } else if (node.getText().equals("}") || node.getText().equals("]") || node.getText().equals(")")) {
+        }else if (node.getText().equals("}") || node.getText().equals("]") || node.getText().equals(")")) {
             printBracket(node);
             depthOfBrackets--;
         }
-        if (node.getSymbol().getType() == SysYLexer.IDENT) {
+        else if (node.getSymbol().getType() == SysYLexer.IDENT) {
             printIdnet(node);
+        }
+        else if(node.getText()!="<EOF>"){
+            System.out.print(node.getText());
         }
     }
 
@@ -84,10 +87,11 @@ public class Listener extends SysYParserBaseListener {
         if (position.equals("Decl")) {
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
+        if(position.equals("stmt")){
+            System.out.print(SGR_Name.White);
+        }
         if (node.getParent() instanceof SysYParser.FuncDefContext || node.getParent() instanceof SysYParser.ExpContext) {
             System.out.print(SGR_Name.LightYellow + node.getText() + SGR_Name.Reset);
-        } else if (position.equals("stmt")) {
-            System.out.print(SGR_Name.White + node.getText() + SGR_Name.Reset);
         }else{
             System.out.print(node.getText()+SGR_Name.Reset);
         }
