@@ -8,13 +8,35 @@ public class Listener extends SysYParserBaseListener {
 
     private int depthOfBrackets = 0;
 
-    public void enterDecl(SysYParser.DeclContext ctx) {
+    private boolean isFunName = false;
+
+    public void enterConstDecl(SysYParser.DeclContext ctx) {
         position = "Decl";
     }
 
     @Override
-    public void exitDecl(SysYParser.DeclContext ctx) {
+    public void enterVarDecl(SysYParser.VarDeclContext ctx) {
+        position = "Decl";
+    }
+
+    @Override
+    public void exitConstDecl(SysYParser.ConstDeclContext ctx) {
         position = "";
+    }
+
+    @Override
+    public void exitVarDecl(SysYParser.VarDeclContext ctx) {
+        position = "";
+    }
+
+    @Override
+    public void enterFuncDef(SysYParser.FuncDefContext ctx) {
+        isFunName = true;
+    }
+
+    @Override
+    public void exitFuncDef(SysYParser.FuncDefContext ctx) {
+        isFunName = false;
     }
 
     @Override
