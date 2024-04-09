@@ -1,5 +1,3 @@
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.Objects;
@@ -92,7 +90,7 @@ public class Listener extends SysYParserBaseListener {
         }
         if(isNewLine){
             for(;i<4*indentation;i++){
-                printSpace(node);
+                printSpace();
             }
             isNewLine = false;
         }
@@ -100,12 +98,12 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined + SGR_Name.LightMagenta);
         }
         if (lastPrint.equals("return")&&!node.getText().equals(";")) {
-            printSpace(node);
+            printSpace();
         }
         if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
             System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
             if (!node.getText().equals("break") &&!node.getText().equals("continue") &&!node.getText().equals("return")) {
-                printSpace(node);
+                printSpace();
             }
         } else if (node.getText().equals("+") || node.getText().equals("-") || node.getText().equals("*") || node.getText().equals("/") || node.getText().equals("%") || node.getText().equals("=") || node.getText().equals("==") || node.getText().equals("!=") || node.getText().equals("<") || node.getText().equals(">") || node.getText().equals(">=") || node.getText().equals("<=") || node.getText().equals("!") || node.getText().equals("&&") || node.getText().equals("||") || node.getText().equals(",")||node.getText().equals(";")) {
             printOP(node);
@@ -140,13 +138,13 @@ public class Listener extends SysYParserBaseListener {
         }
         if (!(position.equals("unaryOP"))&&!node.getText().equals(";")) {
             if(position.equals("Decl")){
-                printSpace(node);
+                printSpace();
                 System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-                printSpace(node);
+                printSpace();
             }else{
-                printSpace(node);
+                printSpace();
                 System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
-                printSpace(node);
+                printSpace();
             }
         } else {
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
@@ -179,7 +177,7 @@ public class Listener extends SysYParserBaseListener {
         }
     }
 
-    private void printSpace(TerminalNode node){
+    private void printSpace(){
         System.out.print(SGR_Name.Reset+" ");
         if(position.equals("Decl")){
             System.out.print(SGR_Name.Underlined);
