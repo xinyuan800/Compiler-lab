@@ -8,6 +8,8 @@ public class Listener extends SysYParserBaseListener {
     private String lastPrint = "";
     private boolean firstLine = true;
     private boolean isNewLine = false;
+
+    private boolean isUnaryOP = false;
     private int indentation = 0;
 
     public void enterDecl(SysYParser.DeclContext ctx) {
@@ -68,25 +70,28 @@ public class Listener extends SysYParserBaseListener {
     }
 
     public void enterUnaryOp(SysYParser.UnaryOpContext ctx) {
-        position = "unaryOP";
+        isUnaryOP = true;
     }
 
     public void visitTerminal(TerminalNode node) {
-        int i=0;
-        if(lastPrint.equals("else")&&position.equals("stmt")&&!node.getText().equals("if")){
-            System.out.println();
-            i=-4;
-            isNewLine = true;
-        }
-        if(isNewLine){
-            for(;i<4*indentation;i++){
-                printSpace();
-            }
-            isNewLine = false;
-        }
+//        int i=0;
+//        if(lastPrint.equals("else")&&position.equals("stmt")&&!node.getText().equals("if")){
+//            System.out.println();
+//            i=-4;
+//            isNewLine = true;
+//        }
+//        if(isNewLine){
+//            for(;i<4*indentation;i++){
+//                printSpace();
+//            }
+//            isNewLine = false;
+//        }
         if(position.equals("Decl")){
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
+        }else if (Objects.equals(position, "stmt")) {
+            System.out.print(SGR_Name.White);
         }
+
         if (lastPrint.equals("return")&&!node.getText().equals(";")) {
             printSpace();
         }
@@ -112,9 +117,7 @@ public class Listener extends SysYParserBaseListener {
         } else if (node.getSymbol().getType() == SysYLexer.R_BRACE || node.getSymbol().getType() == SysYLexer.R_BRACKT || node.getSymbol().getType() == SysYLexer.R_PAREN) {
             printBrackets(node);
             depthOfBrackets--;
-        }else if (Objects.equals(position, "stmt")) {
-            System.out.print(SGR_Name.White+node.getText()+SGR_Name.Reset);
-        } else if (!node.getText().equals("<EOF>")) {
+        } else if(!node.getText().equals("<EOF>")) {
             System.out.print(node.getText()+SGR_Name.Reset);
         }
         lastPrint = node.getText();
@@ -129,7 +132,7 @@ public class Listener extends SysYParserBaseListener {
         else if(node.getText().equals(";")){
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
         }
-        else if (!(position.equals("unaryOP"))) {
+        else if (!(isUnaryOP)) {
             printSpace();
             System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset );
             printSpace();
