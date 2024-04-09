@@ -5,27 +5,18 @@ import java.util.Objects;
 public class Listener extends SysYParserBaseListener {
 
     private String position = "";
+    private int depthOfStmt = 0;
 
     private int depthOfBrackets = 0;
 
     private boolean isFunName = false;
 
-    public void enterConstDecl(SysYParser.DeclContext ctx) {
+    public void enterDecl(SysYParser.DeclContext ctx) {
         position = "Decl";
     }
 
     @Override
-    public void enterVarDecl(SysYParser.VarDeclContext ctx) {
-        position = "Decl";
-    }
-
-    @Override
-    public void exitConstDecl(SysYParser.ConstDeclContext ctx) {
-        position = "";
-    }
-
-    @Override
-    public void exitVarDecl(SysYParser.VarDeclContext ctx) {
+    public void exitDecl(SysYParser.DeclContext ctx) {
         position = "";
     }
 
@@ -41,12 +32,12 @@ public class Listener extends SysYParserBaseListener {
 
     @Override
     public void enterStmt(SysYParser.StmtContext ctx) {
-        position = "stmt";
+        depthOfStmt++;
     }
 
     @Override
     public void exitStmt(SysYParser.StmtContext ctx) {
-        position = "";
+        depthOfStmt--;
     }
 
     @Override
@@ -79,7 +70,7 @@ public class Listener extends SysYParserBaseListener {
             depthOfBrackets--;
         }
         else if (node.getSymbol().getType() == SysYLexer.IDENT) {
-            printIdnet(node);
+            printIdent(node);
         }
     }
 
@@ -103,11 +94,11 @@ public class Listener extends SysYParserBaseListener {
         System.out.print(node.getText()+SGR_Name.Reset);
     }
 
-    private void printIdnet(TerminalNode node) {
+    private void printIdent(TerminalNode node){
         if (position.equals("Decl")) {
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
-        if(position.equals("stmt")){
+        if(depthOfStmt>0){
             System.out.print(SGR_Name.White);
         }
         if (node.getParent() instanceof SysYParser.FuncDefContext || node.getParent() instanceof SysYParser.ExpContext) {
