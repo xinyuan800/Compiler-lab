@@ -77,8 +77,6 @@ public class Listener extends SysYParserBaseListener {
         position.pop();
     }
 
-    publi
-
     @Override
     public void enterBlock(SysYParser.BlockContext ctx) {
         position.push("block");
