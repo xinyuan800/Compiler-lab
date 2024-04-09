@@ -59,9 +59,6 @@ public class Listener extends SysYParserBaseListener {
         else if (node.getSymbol().getType() == SysYLexer.IDENT) {
             printIdnet(node);
         }
-        else if(node.getText()!="<EOF>"){
-            System.out.print(node.getText());
-        }
     }
 
     private void printBracket(TerminalNode node) {
@@ -69,18 +66,19 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined);
         }
         if (depthOfBrackets == 1) {
-            System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightRed );
         } else if (depthOfBrackets == 2) {
-            System.out.print(SGR_Name.LightGreen + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightGreen );
         } else if (depthOfBrackets == 3) {
-            System.out.print(SGR_Name.LightYellow + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightYellow );
         } else if (depthOfBrackets == 4) {
-            System.out.print(SGR_Name.LightBlue + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightBlue );
         } else if (depthOfBrackets == 5) {
-            System.out.print(SGR_Name.LightMagenta + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightMagenta );
         } else if (depthOfBrackets == 6) {
-            System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
+            System.out.print(SGR_Name.LightCyan );
         }
+        System.out.print(node.getText()+SGR_Name.Reset);
     }
 
     private void printIdnet(TerminalNode node) {
@@ -91,10 +89,9 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.White);
         }
         if (node.getParent() instanceof SysYParser.FuncDefContext || node.getParent() instanceof SysYParser.ExpContext) {
-            System.out.print(SGR_Name.LightYellow + node.getText() + SGR_Name.Reset);
-        }else{
-            System.out.print(node.getText()+SGR_Name.Reset);
+            System.out.print(SGR_Name.LightYellow );
         }
+        System.out.print(node.getText()+SGR_Name.Reset);
     }
 
     private void printNumber(TerminalNode node) {
