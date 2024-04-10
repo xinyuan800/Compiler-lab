@@ -18,6 +18,8 @@ public class Listener extends SysYParserBaseListener {
 
     private int isElseStmt = 0;
 
+    private boolean isElseIf = false;
+
     @Override
     public void enterProgram(SysYParser.ProgramContext ctx){
         position.push("program");
@@ -160,6 +162,7 @@ public class Listener extends SysYParserBaseListener {
     public void enterIfStmt(SysYParser.IfStmtContext ctx) {
         position.push("if");
         if(lastPrint.equals("else")){
+            isElseIf = true;
             isElseStmt  ++;
             return;
         }
@@ -190,9 +193,12 @@ public class Listener extends SysYParserBaseListener {
     @Override
     public void exitIfStmt(SysYParser.IfStmtContext ctx) {
         position.pop();
-        if(isElseStmt>0){
-            isElseStmt--;
-            return;
+        if(isElseIf){
+            isElseIf = false;
+            if(isElseStmt>0){
+                isElseStmt--;
+                return;
+            }
         }
         indentation--;
     }
