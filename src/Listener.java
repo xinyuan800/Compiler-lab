@@ -243,7 +243,7 @@ public class Listener extends SysYParserBaseListener {
         if(node.getText().equals("}")&&!position.peek().equals("Decl")){
             printNewLine();
         }
-        if(node.getText().equals("{")&&!lastPrint.equals("\n")&&!lastPrint.equals(" ")){
+        if(node.getText().equals("{")&&!lastPrint.equals("\n")&&!lastPrint.equals(" ")&&!position.peek().equals("Decl")){
             printSpace();
         }
         if(position.peek().equals("Decl")){
@@ -334,6 +334,7 @@ public class Listener extends SysYParserBaseListener {
             isFirstLine = false;
             return;
         }
+            System.out.print(SGR_Name.Reset);
             System.out.println();
             lastPrint = "\n";
             for(int i=0;i<4*indentation;i++){
