@@ -16,9 +16,6 @@ public class Listener extends SysYParserBaseListener {
 
     private int indentation = 0;
 
-    private int isElseStmt = 0;
-
-    private boolean isElseIf = false;
 
     @Override
     public void enterProgram(SysYParser.ProgramContext ctx){
@@ -160,22 +157,21 @@ public class Listener extends SysYParserBaseListener {
 
     @Override
     public void enterIfStmt(SysYParser.IfStmtContext ctx) {
-        position.push("if");
         if(lastPrint.equals("else")){
-            isElseIf = true;
-            isElseStmt  ++;
+            position.push("elseif");
             return;
         }
+        position.push("if");
         printNewLine();
         indentation++;
     }
 
     @Override
     public void enterBlock1(SysYParser.Block1Context ctx) {
-        if(!position.peek().equals("if")&&!position.peek().equals("while")){
+        if(!position.peek().equals("if")&&!position.peek().equals("while")&&!position.peek().equals("elseif")){
             printNewLine();
         }
-        if(position.peek().equals("while")||position.peek().equals("if")){
+        if(position.peek().equals("while")||position.peek().equals("if")||position.peek().equals("elseif")){
             indentation--;
         }
         position.push("block1");
@@ -184,7 +180,7 @@ public class Listener extends SysYParserBaseListener {
     @Override
     public void exitBlock1(SysYParser.Block1Context ctx) {
         position.pop();
-        if(position.peek().equals("while")||position.peek().equals("if")||position.peek().equals("else")){
+        if(position.peek().equals("while")||position.peek().equals("if")||position.peek().equals("elseif")){
             indentation++;
         }
     }
@@ -192,13 +188,8 @@ public class Listener extends SysYParserBaseListener {
 
     @Override
     public void exitIfStmt(SysYParser.IfStmtContext ctx) {
-        position.pop();
-        if(isElseIf){
-            isElseIf = false;
-            if(isElseStmt>0){
-                isElseStmt--;
-                return;
-            }
+        if(position.pop().equals("elseif")){
+            return;
         }
         indentation--;
     }
