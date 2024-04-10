@@ -13,10 +13,16 @@ public class Listener extends SysYParserBaseListener {
     private boolean isFirstLine = true;
 
     private boolean isWhile = false;
+    private boolean isWhileStmt = false;
 
-    private boolean isIfElse = false;
+    private boolean isIf = false;
+
+    private boolean isIfStmt = false;
 
     private String lastPrint = "";
+    private boolean isUnaryOP = false;
+
+    private int indentation = 0;
 
 
     @Override
@@ -70,6 +76,12 @@ public class Listener extends SysYParserBaseListener {
     @Override
     public void enterStmt(SysYParser.StmtContext ctx) {
         position.push("stmt");
+        if(isWhile){
+            isWhileStmt = true;
+        }
+        if(isIf){
+            isIfStmt = true;
+        }
     }
 
     @Override
@@ -80,6 +92,14 @@ public class Listener extends SysYParserBaseListener {
     @Override
     public void enterBlock(SysYParser.BlockContext ctx) {
         position.push("block");
+        if(isWhileStmt){
+            isWhileStmt = false;
+            isWhile = false;
+        }
+        if(isIfStmt){
+            isIfStmt = false;
+            isIf = false;
+        }
     }
 
     @Override
@@ -88,7 +108,46 @@ public class Listener extends SysYParserBaseListener {
     }
 
     @Override
+    public void enterUnaryOp(SysYParser.UnaryOpContext ctx) {
+        isUnaryOP = true;
+    }
+
+    @Override
+    public void exitUnaryOp(SysYParser.UnaryOpContext ctx) {
+        isUnaryOP = false;
+    }
+
+    @Override
     public void visitTerminal(TerminalNode node) {
+        int i=0;
+        if(isWhileStmt){
+            System.out.println();
+            lastPrint = "\n";
+            isWhileStmt = false;
+            isWhile = false;
+            i=-4;
+        }
+        if(isIfStmt){
+            System.out.println();
+            isIf = false;
+            isIfStmt = false;
+            lastPrint = "\n";
+            i=-4;
+        }
+        if(lastPrint.equals("return")&&!node.getText().equals(";")){
+            printSpace();
+        }
+        if(lastPrint.equals("else")&&!node.getText().equals("if")&&!node.getText().equals("{")){
+            System.out.println();
+            lastPrint = "\n";
+            i=-4;
+        }
+        if(node.getText().equals("}"))indentation--;
+        if(lastPrint.equals("\n")){
+            for(;i<indentation*4;i++){
+                printSpace();
+            }
+        }
         if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
             printKeyWord(node);
         }
@@ -102,7 +161,9 @@ public class Listener extends SysYParserBaseListener {
             depthOfBrackets++;
             if (depthOfBrackets == 7) depthOfBrackets = 1;
             printBracket(node);
+            if(node.getText().equals("{"))indentation++;
         }else if (node.getText().equals("}") || node.getText().equals("]") || node.getText().equals(")")) {
+
             printBracket(node);
             depthOfBrackets--;
         }
@@ -112,6 +173,9 @@ public class Listener extends SysYParserBaseListener {
     }
 
     private void printBracket(TerminalNode node) {
+        if(node.getText().equals("{")&&!lastPrint.equals("\n")&&!lastPrint.equals(" ")){
+            printSpace();
+        }
         if(position.peek().equals("Decl")){
             System.out.print(SGR_Name.Underlined);
         }
@@ -163,15 +227,24 @@ public class Listener extends SysYParserBaseListener {
     }
 
     private void printOP(TerminalNode node) {
+        if(!isUnaryOP&&!node.getText().equals(",")&&!node.getText().equals(";")){
+            printSpace();
+        }
         if (position.peek().equals("Decl")) {
             System.out.print(SGR_Name.Underlined);
         }
         System.out.print(SGR_Name.LightRed + node.getText() + SGR_Name.Reset);
         lastPrint = node.getText();
-        if(node.getText().equals(";")){
+        if(!isUnaryOP&&!node.getText().equals(",")&&!node.getText().equals(";")){
+            printSpace();
+        }
+        else if(node.getText().equals(";")){
             isFirstLine = false;
             System.out.println();
-            lastPrint = node.getText();
+            lastPrint = "\n";
+        }
+        else if(lastPrint.equals(",")){
+            printSpace();
         }
     }
 
@@ -180,6 +253,20 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined);
         }
         System.out.print(SGR_Name.LightCyan + node.getText() + SGR_Name.Reset);
+        if(node.getText().equals("if")){
+            isIf = true;
+        }else if(node.getText().equals("while")){
+            isWhile = true;
+        }
+        String out = node.getText();
+        if(!out.equals("break")&&!out.equals("continue")&&!out.equals("return")){
+            printSpace();
+        }
         lastPrint = node.getText();
+    }
+
+    private void printSpace(){
+        System.out.print(SGR_Name.Reset+" ");
+        lastPrint = " ";
     }
 }
