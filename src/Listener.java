@@ -11,21 +11,12 @@ public class Listener extends SysYParserBaseListener {
 
     private boolean isFirstLine = true;
 
-    private boolean isWhileStmt = false;
-
-    private boolean firstIfStmt = false;
-
-    private boolean firstWhileStmt = false;
-
-    private int isIfStmt = 0;
-
-    private boolean isElseStatement = false;
-
     private String lastPrint = "";
     private boolean isUnaryOP = false;
 
     private int indentation = 0;
 
+    private boolean isElseStmt = false;
 
     @Override
     public void enterProgram(SysYParser.ProgramContext ctx){
@@ -79,55 +70,8 @@ public class Listener extends SysYParserBaseListener {
     }
 
     @Override
-    public void enterStmt(SysYParser.StmtContext ctx) {
-        position.push("stmt");
-        if(isIfStmt>0){
-            firstIfStmt = true;
-        }
-        if(isWhileStmt){
-            firstWhileStmt =true;
-        }
-        if(ctx.WHILE()!=null){
-            isWhileStmt = true;
-        }
-        if(ctx.IF()!=null){
-            isIfStmt++;
-        }
-        if(isIfStmt>1||isWhileStmt||isElseStatement){
-            return;
-        }
-        printNewLine();
-    }
-
-    @Override
-    public void exitStmt(SysYParser.StmtContext ctx) {
-        position.pop();
-        if(isIfStmt>0){
-            isIfStmt --;
-            indentation--;
-        }
-        if(isWhileStmt){
-            isWhileStmt = false;
-            indentation--;
-        }
-        if(isElseStatement){
-            isElseStatement = false;
-            indentation--;
-        }
-    }
-
-    @Override
     public void enterBlock(SysYParser.BlockContext ctx) {
         position.push("block");
-        if(isIfStmt>0) {
-            firstIfStmt = false;
-            isIfStmt --;
-        }
-        if(isWhileStmt){
-            isWhileStmt = false;
-            firstWhileStmt = false;
-        }
-        if(isElseStatement)isElseStatement = false;
     }
 
     @Override
@@ -155,34 +99,123 @@ public class Listener extends SysYParserBaseListener {
         indentation--;
     }
 
-    private void enterElseStmt(){
-        indentation++;
-        printNewLine();
+    @Override
+    public void enterStmt1(SysYParser.Stmt1Context ctx) {
+       position.push("stmt1");
+           printNewLine();
     }
 
-    private void enterIfStmt(){
-        firstIfStmt = false;
-        indentation++;
-        printNewLine();
+    @Override
+    public void exitStmt1(SysYParser.Stmt1Context ctx) {
+        position.pop();
     }
 
-    private void enterWhileStmt(){
-        firstWhileStmt = false;
+    @Override
+    public void enterStmt2(SysYParser.Stmt2Context ctx) {
+        position.push("stmt2");
+            printNewLine();
+    }
+
+    @Override
+    public void exitStmt2(SysYParser.Stmt2Context ctx) {
+        position.pop();
+    }
+
+    @Override
+    public void enterStmt3(SysYParser.Stmt3Context ctx) {
+        printNewLine();
+        position.push("stmt3");
+    }
+
+    @Override
+    public void exitStmt3(SysYParser.Stmt3Context ctx) {
+        position.pop();
+    }
+
+    @Override
+    public void enterStmt4(SysYParser.Stmt4Context ctx) {
+        printNewLine();
+        position.push("stmt4");
+    }
+
+    @Override
+    public void exitStmt4(SysYParser.Stmt4Context ctx) {
+        position.pop();
+    }
+
+    @Override
+    public void enterWhileStmt(SysYParser.WhileStmtContext ctx) {
+        printNewLine();
+        position.push("while");
         indentation++;
+    }
+
+    @Override
+    public void exitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        position.pop();
+        indentation--;
+    }
+
+    @Override
+    public void enterIfStmt(SysYParser.IfStmtContext ctx) {
+        position.push("if");
+        if(lastPrint.equals("else")){
+            isElseStmt  =true;
+            return;
+        }
+        printNewLine();
+        indentation++;
+    }
+
+    @Override
+    public void enterBlock1(SysYParser.Block1Context ctx) {
+        if(!position.peek().equals("if")&&!position.peek().equals("while")){
+            printNewLine();
+        }
+        if(position.peek().equals("while")||position.peek().equals("if")){
+            indentation--;
+        }
+        position.push("block1");
+    }
+
+    @Override
+    public void exitBlock1(SysYParser.Block1Context ctx) {
+        position.pop();
+        if(position.peek().equals("while")||position.peek().equals("if")||position.peek().equals("else")){
+            indentation++;
+        }
+    }
+
+
+    @Override
+    public void exitIfStmt(SysYParser.IfStmtContext ctx) {
+        position.pop();
+        if(isElseStmt){
+            isElseStmt = false;
+            return;
+        }
+        indentation--;
+    }
+
+    @Override
+    public void enterStmt5(SysYParser.Stmt5Context ctx) {
+        position.push("stmt5");
         printNewLine();
     }
 
     @Override
+    public void exitStmt5(SysYParser.Stmt5Context ctx) {
+        position.pop();
+    }
+
+    @Override
     public void visitTerminal(TerminalNode node) {
-        if(lastPrint.equals("else")){
-            if(node.getText().equals("if")||node.getText().equals("{")){
-                printSpace();
-            }else{
-                enterElseStmt();
-            }
+        if(lastPrint.equals("return")&&!node.getText().equals(";")){
+            printSpace();
         }
-        if(firstIfStmt)enterIfStmt();
-        if(firstWhileStmt)enterWhileStmt();
+        if(lastPrint.equals("else")&&(node.getText().equals("if")||node.getText().equals("{"))){
+            printSpace();
+        }
         if (node.getText().equals("const") || node.getText().equals("int") || node.getText().equals("void") || node.getText().equals("if") || node.getText().equals("else") || node.getText().equals("while") || node.getText().equals("break") || node.getText().equals("continue") || node.getText().equals("return")) {
             printKeyWord(node);
         }
@@ -199,6 +232,7 @@ public class Listener extends SysYParserBaseListener {
         }else if (node.getText().equals("}") || node.getText().equals("]") || node.getText().equals(")")) {
             printBracket(node);
             depthOfBrackets--;
+            if(depthOfBrackets==0)  depthOfBrackets = 6;
         }
         else if (node.getSymbol().getType() == SysYLexer.IDENT) {
             printIdent(node);
@@ -236,7 +270,8 @@ public class Listener extends SysYParserBaseListener {
         if (position.peek().equals("Decl")){
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
-        if(position.peek().equals("stmt")){
+        if(position.peek().equals("stmt1")||position.peek().equals("stmt2")||position.peek().equals("if")||position.peek().equals("while")||position.peek().equals("stmt5")||position.peek().equals("stmt3")||position.
+        peek().equals("stmt4")||position.peek().equals("block1")){
             System.out.print(SGR_Name.White);
         }
         if (isFunName) {
@@ -274,8 +309,9 @@ public class Listener extends SysYParserBaseListener {
 
     private void printKeyWord(TerminalNode node) {
         if(node.getText().equals("else")){
-            isElseStatement = true;
+            indentation--;
             printNewLine();
+            indentation++;
         }
         if (position.peek().equals("Decl")) {
             System.out.print(SGR_Name.Underlined);
@@ -294,6 +330,10 @@ public class Listener extends SysYParserBaseListener {
     }
 
     private void printNewLine(){
+        if(isFirstLine){
+            isFirstLine = false;
+            return;
+        }
             System.out.println();
             lastPrint = "\n";
             for(int i=0;i<4*indentation;i++){
