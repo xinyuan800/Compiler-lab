@@ -268,7 +268,7 @@ public class Listener extends SysYParserBaseListener {
             System.out.print(SGR_Name.Underlined+SGR_Name.LightMagenta);
         }
         if(position.peek().equals("stmt1")||position.peek().equals("stmt2")||position.peek().equals("if")||position.peek().equals("while")||position.peek().equals("stmt5")||position.peek().equals("stmt3")||position.
-        peek().equals("stmt4")||position.peek().equals("block1")){
+        peek().equals("stmt4")||position.peek().equals("block1")||position.peek().equals("elseif")){
             System.out.print(SGR_Name.White);
         }
         if (isFunName) {
