@@ -12,7 +12,6 @@ public class Visitor extends SysYParserBaseVisitor{
         globalScope = new GlobalScope(null);
         currentScope = globalScope;
         visitCompUnit(ctx.compUnit());
-        OutputHelper.printCorrect();
         return null;
     }
 
@@ -161,25 +160,8 @@ public class Visitor extends SysYParserBaseVisitor{
         else if(symbolL instanceof FuncSymbol){
           OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
           return null;
-        }else if(symbolL.getType() instanceof IntType&&symbolR.getType() instanceof IntType){
-            return null;
-        }else if(symbolL.getType() instanceof ArrayType&&symbolR.getType() instanceof ArrayType){
-            ArrayType typeL = (ArrayType)symbolL.getType();
-            ArrayType typeR = (ArrayType)symbolR.getType();
-            while(typeR.equals(typeL)){
-                if(typeR.getContained().equals(typeL.getContained())){
-                    if(typeR.getContained() instanceof IntType){
-                        break;
-                    }else{
-                        typeL = (ArrayType) typeL.getContained();
-                        typeR = (ArrayType) typeR.getContained();
-                    }
-                }else{
-                    OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
-                    return null;
-                }
-            }
-        } else{
+        }
+        if(!comType(symbolL.getType(),symbolR.getType())){
             OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
             return null;
         }
@@ -209,7 +191,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if(symbol==null){
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
-        }else if(symbol.getType() instanceof IntType){
+        }else if(symbol.getType() instanceof IntType||symbol instanceof FuncSymbol){
             if(!ctx.L_BRACKT().isEmpty()){
                 OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
                 return null;
@@ -242,17 +224,82 @@ public class Visitor extends SysYParserBaseVisitor{
             OutputHelper.printSemanticError(ErrorType.FUNC_CALL_ON_VARIABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
-        return symbol;
+        ArrayList<Type> arrayList = new ArrayList<>();
+        ArrayList<Type> paraList = new ArrayList<>();
+        FunctionType functionType = (FunctionType) symbol.getType();
+        arrayList = functionType.getParamsType();
+        if(!(ctx.funcRParams()==null)){
+            paraList = visitFuncRParams(ctx.funcRParams());
+        }
+        if(arrayList.size()==paraList.size()){
+            if(arrayList.containsAll(paraList)&&paraList.containsAll(arrayList)){
+                return symbol;
+            }
+        }
+        OutputHelper.printSemanticError(ErrorType.PARAM_NOT_APPLICABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+        return null;
+    }
+
+    @Override
+    public ArrayList<Type> visitFuncRParams(SysYParser.FuncRParamsContext ctx) {
+        ArrayList<Type> params = new ArrayList<>();
+        for(int i=0;i<ctx.param().size();i++){
+            params.add(visitParam(ctx.param(i)));
+        }
+        return params;
+    }
+
+    @Override
+    public Type visitParam(SysYParser.ParamContext ctx) {
+        Symbol symbol = (Symbol) visit(ctx.exp());
+        return symbol.getType();
     }
 
     @Override
     public Symbol visitExp5(SysYParser.Exp5Context ctx) {
-        return new BaseSymbol(ctx.getText(),new IntType());
+        Symbol symbolL = (Symbol) visit(ctx.exp(0));
+        Symbol symbolR = (Symbol) visit(ctx.exp(1));
+        if(symbolL==null||symbolR==null){return null;}
+        if(!comType(symbolL.getType(),symbolR.getType())){
+            OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
+            return null;
+        }
+        return new BaseSymbol(ctx.getText(),symbolL.getType());
     }
 
     @Override
     public Symbol visitExp6(SysYParser.Exp6Context ctx) {
-        return new BaseSymbol(ctx.getText(),new IntType());
+        Symbol symbolL = (Symbol) visit(ctx.exp(0));
+        Symbol symbolR = (Symbol) visit(ctx.exp(1));
+        if(symbolL==null||symbolR==null){return null;}
+        if(!comType(symbolL.getType(),symbolR.getType())){
+            OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
+            return null;
+        }
+        return new BaseSymbol(ctx.getText(),symbolL.getType());
+    }
+
+    private boolean comType(Type type1,Type type2) {
+        if (type1 instanceof IntType && type2 instanceof IntType) {
+            return true;
+        } else if (type1 instanceof ArrayType && type2 instanceof ArrayType) {
+            ArrayType typeL = (ArrayType) type1;
+            ArrayType typeR = (ArrayType) type2;
+            while (typeR.equals(typeL)) {
+                if (typeR.getContained().equals(typeL.getContained())) {
+                    if (typeR.getContained() instanceof IntType) {
+                        break;
+                    } else {
+                        typeL = (ArrayType) typeL.getContained();
+                        typeR = (ArrayType) typeR.getContained();
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }
 

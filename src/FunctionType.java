@@ -9,4 +9,8 @@ public class FunctionType extends Type{
         this.paramsType = paramsType;
         this.retTy = retTy;
     }
+
+    public ArrayList<Type> getParamsType() {
+        return paramsType;
+    }
 }
