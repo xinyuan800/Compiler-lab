@@ -3,5 +3,5 @@ int  a = 1;
 int b = a;
 int c = func(a);
 int d = arr[a];
-int e = a + b;
+int e = a() + b;
 }

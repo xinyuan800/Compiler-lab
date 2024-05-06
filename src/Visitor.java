@@ -163,6 +163,10 @@ public class Visitor extends SysYParserBaseVisitor{
             OutputHelper.printSemanticError(ErrorType.FUNC_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
+        if(currentScope.findWholeScope(name) instanceof VariableSymbol){
+            OutputHelper.printSemanticError(ErrorType.FUNC_CALL_ON_VARIABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+            return null;
+        }
         return null;
     }
 }
