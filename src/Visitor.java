@@ -115,9 +115,13 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
             VariableSymbol variableSymbol = new VariableSymbol(varName,new IntType());
             currentScope.define(variableSymbol);
         } else { // 数组
-            int num_elements = ctx.L_BRACKT().size();
-            ArrayType arrayType = new ArrayType(new ArrayType(),num_elements);
+            ArrayType arrayType = new ArrayType();
             VariableSymbol variableSymbol = new VariableSymbol(varName,arrayType);
+            for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
+                arrayType.setContained(new ArrayType());
+                arrayType = (ArrayType) arrayType.getContained();
+            }
+            arrayType.setContained(new IntType());
             currentScope.define(variableSymbol);
         }
         return null;
@@ -161,13 +165,18 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
-        if(ctx.getParent() instanceof SysYParser.Exp2Context){
-            expSymbol = currentScope.findWholeScope(ctx.getText());
+        if(ctx.getParent() instanceof SysYParser.Exp2Context||ctx.getParent() instanceof SysYParser.Stmt1Context){
+            expSymbol = symbol;
         }
-        if(!(symbol.getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
-            OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-            return null;
+        Type type = expSymbol.getType();
+        for(int i=0;i<ctx.L_BRACKT().size();i++){
+            if(type instanceof IntType||type instanceof FunctionType){
+                OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                return null;
+            }
+            type = ((ArrayType) type).getContained();
         }
+        expSymbol.setType(type);
         return null;
     }
 
@@ -190,7 +199,7 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
     public Void visitStmt5(SysYParser.Stmt5Context ctx) {
         expSymbol = null;
         visit(ctx.exp());
-        if(!(expSymbol.getType() instanceof IntType)){
+        if(expSymbol.getType()==null||!(expSymbol.getType() instanceof IntType)){
             OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH,ctx.getStart().getLine(),ctx.getText());
             return null;
         }
@@ -207,7 +216,7 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
             typeL = expSymbol.getType();
         }
         expSymbol = null;
-        if(typeL instanceof FunctionType){
+        if(!(typeL instanceof ArrayType)&&(!(typeL instanceof IntType))){
             OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
             return null;
         }
@@ -216,6 +225,7 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
         if(expSymbol!=null){
             typeR = expSymbol.getType();
         }
+
         expSymbol = null;
 
 

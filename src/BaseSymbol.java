@@ -1,9 +1,12 @@
 public class BaseSymbol implements Symbol{
     final String name;
-    final Type type;
+    Type type;
 
     public BaseSymbol(String name,Type type){
         this.name = name;
+        this.type = type;
+    }
+    public void setType(Type type){
         this.type = type;
     }
     @Override

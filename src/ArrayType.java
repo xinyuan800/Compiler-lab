@@ -11,6 +11,14 @@ public class ArrayType extends Type{
 
     }
 
+    public void setContained(Type contained){
+        this.contained= contained;
+    }
+
+    public void setNum_elements(int num_elements){
+        this.num_elements = num_elements;
+    }
+
     public Type getContained() {
         return contained;
     }
