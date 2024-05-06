@@ -83,7 +83,7 @@ public class Visitor extends SysYParserBaseVisitor{
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-
+                visit(ctx.initVal());
             }
             currentScope.define(new VariableSymbol(varName,new IntType()));
         } else { // 数组
@@ -115,7 +115,7 @@ public class Visitor extends SysYParserBaseVisitor{
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-
+                visit(ctx.constInitVal());
             }
             currentScope.define(new VariableSymbol(varName,new IntType()));
         } else { // 数组
@@ -151,15 +151,17 @@ public class Visitor extends SysYParserBaseVisitor{
         String name = ctx.IDENT().getText();
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+            return null;
         }
         return null;
     }
 
     @Override
-    public Object visitFuncCall(SysYParser.FuncCallContext ctx) {
+    public Type visitFuncCall(SysYParser.FuncCallContext ctx) {
         String name = ctx.IDENT().getText();
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.FUNC_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+            return null;
         }
         return null;
     }
