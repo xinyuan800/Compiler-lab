@@ -5,10 +5,10 @@ public abstract class OutputHelper {
         System.err.println("Error type "+(errorType.ordinal()+1)+" at Line "+line+":");
     }
 
-    public static void printCorrect(){
-        if(flag){
-            System.err.println("No semantic errors in the program!");
-        }
-    }
+//    public static void printCorrect(){
+//        if(flag){
+//            System.err.println("No semantic errors in the program!");
+//        }
+//    }
 
 }

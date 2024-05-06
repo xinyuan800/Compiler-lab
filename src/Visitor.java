@@ -18,7 +18,6 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
         for(int i=0;i<ctx.getChildCount();i++){
             visit(ctx.getChild(i));
         }
-        OutputHelper.printCorrect();
         return null;
     }
 
