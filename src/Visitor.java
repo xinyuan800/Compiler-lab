@@ -87,6 +87,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
                 Symbol symbol = (Symbol) visitInitVal(ctx.initVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                if(symbol==null){return null;}
                 if(!comType(symbol.getType(),new IntType())){
                     OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
                     return null;
@@ -123,6 +124,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
                 Symbol symbol = (Symbol) visitConstInitVal(ctx.constInitVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                if(symbol==null){return null;}
                 if(!comType(symbol.getType(),new IntType())){
                     OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
                     return null;
@@ -311,5 +313,3 @@ public class Visitor extends SysYParserBaseVisitor{
         return false;
     }
 }
-
-
