@@ -192,33 +192,33 @@ public class Visitor extends SysYParserBaseVisitor{
 //        return new BaseSymbol(ctx.number().getText(),new IntType());
 //    }
 //
-//    @Override
-//    public Symbol visitLVal(SysYParser.LValContext ctx) {
-//        String name = ctx.IDENT().getText();
-//        Symbol symbol = currentScope.findWholeScope(name);
-//        if(symbol==null){
-//            OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-//            return null;
-//        }else if(symbol.getType() instanceof IntType||symbol instanceof FuncSymbol){
-//            if(!ctx.L_BRACKT().isEmpty()){
-//                OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-//                return null;
-//            }
-//            return symbol;
-//        }else if(symbol.getType() instanceof ArrayType){
-//            ArrayType arrayType = (ArrayType) symbol.getType();
-//            for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
-//                if(arrayType.getContained() instanceof IntType){
-//                    OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-//                    return null;
-//                }else{
-//                    arrayType = (ArrayType) arrayType.getContained();
-//                }
-//            }
-//            symbol.setType(arrayType);
-//        }
-//        return symbol;
-//    }
+    @Override
+    public Symbol visitLVal(SysYParser.LValContext ctx) {
+        String name = ctx.IDENT().getText();
+        Symbol symbol = currentScope.findWholeScope(name);
+        if(symbol==null){
+            OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+            return null;
+        }else if(symbol.getType() instanceof IntType||symbol instanceof FuncSymbol){
+            if(!ctx.L_BRACKT().isEmpty()){
+                OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                return null;
+            }
+            return symbol;
+        }else if(symbol.getType() instanceof ArrayType){
+            ArrayType arrayType = (ArrayType) symbol.getType();
+            for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
+                if(arrayType.getContained() instanceof IntType){
+                    OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                    return null;
+                }else{
+                    arrayType = (ArrayType) arrayType.getContained();
+                }
+            }
+            symbol.setType(arrayType);
+        }
+        return symbol;
+    }
 //
 //    @Override
 //    public Symbol visitFuncCall(SysYParser.FuncCallContext ctx) {
