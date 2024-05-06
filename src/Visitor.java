@@ -211,19 +211,20 @@ public class Visitor extends SysYParserBaseVisitor<Void> {
         Type typeL = new Type();
         expSymbol = null;
         visit(ctx.lVal());
-        if(expSymbol!=null){
-            typeL = expSymbol.getType();
+        if(expSymbol==null){
+            return null;
         }
+        typeL = expSymbol.getType();
         expSymbol = null;
         if(!(typeL instanceof ArrayType)&&(!(typeL instanceof IntType))){
             OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
             return null;
         }
         visit(ctx.exp());
-
-        if(expSymbol!=null){
-            typeR = expSymbol.getType();
+        if(expSymbol==null){
+            return null;
         }
+        typeR = expSymbol.getType();
 
         expSymbol = null;
 
