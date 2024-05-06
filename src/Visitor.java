@@ -146,4 +146,21 @@ public class Visitor extends SysYParserBaseVisitor{
         return null;
     }
 
+    @Override
+    public Type visitLVal(SysYParser.LValContext ctx) {
+        String name = ctx.IDENT().getText();
+        if(currentScope.findWholeScope(name)==null){
+            OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitFuncCall(SysYParser.FuncCallContext ctx) {
+        String name = ctx.IDENT().getText();
+        if(currentScope.findWholeScope(name)==null){
+            OutputHelper.printSemanticError(ErrorType.FUNC_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+        }
+        return null;
+    }
 }
