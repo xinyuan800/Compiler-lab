@@ -206,7 +206,8 @@ public class Visitor extends SysYParserBaseVisitor{
                 return null;
             }
             return symbol;
-        }else if(symbol.getType() instanceof ArrayType arrayType){
+        }else if(symbol.getType() instanceof ArrayType){
+            ArrayType arrayType = (ArrayType) symbol.getType();
             for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
                 if(arrayType.getContained() instanceof IntType){
                     OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
@@ -290,7 +291,9 @@ public class Visitor extends SysYParserBaseVisitor{
     private boolean comType(Type type1,Type type2) {
         if (type1 instanceof IntType && type2 instanceof IntType) {
             return false;
-        } else if (type1 instanceof ArrayType typeL && type2 instanceof ArrayType typeR) {
+        } else if (type1 instanceof ArrayType && type2 instanceof ArrayType ) {
+            ArrayType typeL = (ArrayType) type1;
+            ArrayType typeR = (ArrayType) type2;
             while (typeR.equals(typeL)) {
                 if (typeR.getContained().equals(typeL.getContained())) {
                     if (typeR.getContained() instanceof IntType) {
