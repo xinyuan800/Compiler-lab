@@ -5,6 +5,7 @@ public class BaseSymbol implements Symbol{
     public BaseSymbol(String name,Type type){
         this.name = name;
         this.type = type;
+        if(type==null){this.type = new Type();}
     }
     public void setType(Type type){
         this.type = type;

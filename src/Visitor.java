@@ -86,7 +86,11 @@ public class Visitor extends SysYParserBaseVisitor{
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-                visitInitVal(ctx.initVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                Symbol symbol = (Symbol) visitInitVal(ctx.initVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                if(!comType(symbol.getType(),new IntType())){
+                    OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                    return null;
+                }
             }
             currentScope.define(new VariableSymbol(varName,new IntType()));
         } else { // 数组
@@ -118,7 +122,11 @@ public class Visitor extends SysYParserBaseVisitor{
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-                visitConstInitVal(ctx.constInitVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                Symbol symbol = (Symbol) visitConstInitVal(ctx.constInitVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
+                if(!comType(symbol.getType(),new IntType())){
+                    OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                    return null;
+                }
             }
             currentScope.define(new VariableSymbol(varName,new IntType()));
         } else { // 数组
@@ -154,6 +162,7 @@ public class Visitor extends SysYParserBaseVisitor{
         Symbol symbolL = visitLVal(ctx.lVal());
         Symbol symbolR = (Symbol) visit(ctx.exp());
         if(symbolL==null||symbolR==null){return null;}
+        if(symbolL.getType()==null||symbolR.getType()==null){return null;}
         if(symbolR.getType() instanceof FunctionType){
             symbolR.setType( ((FunctionType) symbolR.getType()).retTy);
         }
