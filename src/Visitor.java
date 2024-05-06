@@ -2,15 +2,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Visitor extends SysYParserBaseVisitor{
-    private GlobalScope globalScope = null;
     private Scope currentScope = null;
 
     private HashMap<String,Symbol> temSymbolTable = new HashMap<>();
 
     @Override
     public Void visitProgram(SysYParser.ProgramContext ctx) {
-        globalScope = new GlobalScope(null);
-        currentScope = globalScope;
+        currentScope = new GlobalScope(null);
         visitCompUnit(ctx.compUnit());
         return null;
     }
@@ -23,7 +21,6 @@ public class Visitor extends SysYParserBaseVisitor{
                     ctx.IDENT().getText());
             return null;
         }
-
         Type retType = new VoidType();
         String typeStr = ctx.getChild(0).getText();
         if (typeStr.equals("int"))
@@ -88,7 +85,7 @@ public class Visitor extends SysYParserBaseVisitor{
             if (ctx.ASSIGN() != null) {     // 包含定义语句
                 Symbol symbol = (Symbol) visitInitVal(ctx.initVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
                 if(symbol==null){return null;}
-                if(!comType(symbol.getType(),new IntType())){
+                if(comType(symbol.getType(), new IntType())){
                     OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
                     return null;
                 }
@@ -125,7 +122,7 @@ public class Visitor extends SysYParserBaseVisitor{
             if (ctx.ASSIGN() != null) {     // 包含定义语句
                 Symbol symbol = (Symbol) visitConstInitVal(ctx.constInitVal()); // 访问定义语句右侧的表达式，如c=4右侧的4
                 if(symbol==null){return null;}
-                if(!comType(symbol.getType(),new IntType())){
+                if(comType(symbol.getType(), new IntType())){
                     OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
                     return null;
                 }
@@ -162,8 +159,9 @@ public class Visitor extends SysYParserBaseVisitor{
     @Override
     public Void visitStmt1(SysYParser.Stmt1Context ctx) {
         Symbol symbolL = visitLVal(ctx.lVal());
+        if(symbolL==null){return null;}
         Symbol symbolR = (Symbol) visit(ctx.exp());
-        if(symbolL==null||symbolR==null){return null;}
+        if(symbolR==null){return null;}
         if(symbolL.getType()==null||symbolR.getType()==null){return null;}
         if(symbolR.getType() instanceof FunctionType){
             symbolR.setType( ((FunctionType) symbolR.getType()).retTy);
@@ -172,7 +170,7 @@ public class Visitor extends SysYParserBaseVisitor{
           OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
           return null;
         }
-        if(!comType(symbolL.getType(),symbolR.getType())){
+        if(comType(symbolL.getType(), symbolR.getType())){
             OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.ASSIGN().getSymbol().getLine(),ctx.getText());
             return null;
         }
@@ -208,8 +206,7 @@ public class Visitor extends SysYParserBaseVisitor{
                 return null;
             }
             return symbol;
-        }else if(symbol.getType() instanceof ArrayType){
-            ArrayType arrayType = (ArrayType) symbol.getType();
+        }else if(symbol.getType() instanceof ArrayType arrayType){
             for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
                 if(arrayType.getContained() instanceof IntType){
                     OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
@@ -271,7 +268,7 @@ public class Visitor extends SysYParserBaseVisitor{
         Symbol symbolL = (Symbol) visit(ctx.exp(0));
         Symbol symbolR = (Symbol) visit(ctx.exp(1));
         if(symbolL==null||symbolR==null){return null;}
-        if(!comType(symbolL.getType(),symbolR.getType())){
+        if(comType(symbolL.getType(), symbolR.getType())){
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
             return null;
         }
@@ -283,7 +280,7 @@ public class Visitor extends SysYParserBaseVisitor{
         Symbol symbolL = (Symbol) visit(ctx.exp(0));
         Symbol symbolR = (Symbol) visit(ctx.exp(1));
         if(symbolL==null||symbolR==null){return null;}
-        if(!comType(symbolL.getType(),symbolR.getType())){
+        if(comType(symbolL.getType(), symbolR.getType())){
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
             return null;
         }
@@ -292,10 +289,8 @@ public class Visitor extends SysYParserBaseVisitor{
 
     private boolean comType(Type type1,Type type2) {
         if (type1 instanceof IntType && type2 instanceof IntType) {
-            return true;
-        } else if (type1 instanceof ArrayType && type2 instanceof ArrayType) {
-            ArrayType typeL = (ArrayType) type1;
-            ArrayType typeR = (ArrayType) type2;
+            return false;
+        } else if (type1 instanceof ArrayType typeL && type2 instanceof ArrayType typeR) {
             while (typeR.equals(typeL)) {
                 if (typeR.getContained().equals(typeL.getContained())) {
                     if (typeR.getContained() instanceof IntType) {
@@ -305,11 +300,11 @@ public class Visitor extends SysYParserBaseVisitor{
                         typeR = (ArrayType) typeR.getContained();
                     }
                 } else {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }
