@@ -156,7 +156,7 @@ public class Visitor extends SysYParserBaseVisitor{
             OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
-        return null;
+        return  currentScope.findWholeScope(name).getType();
     }
 
     @Override
