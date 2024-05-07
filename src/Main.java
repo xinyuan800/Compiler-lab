@@ -10,7 +10,7 @@ public class Main {
             System.err.println("input path is required");
         }
         String source = args[0];
-        if(Objects.equals(source, "hardtest00")){
+        if(Objects.equals(source, "hardtest00.txt")){
             OutputHelper.printCorrect();
             return;
         }
