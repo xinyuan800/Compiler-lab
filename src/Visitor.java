@@ -10,6 +10,9 @@ public class Visitor extends SysYParserBaseVisitor {
     @Override
     public Void visitProgram(SysYParser.ProgramContext ctx) {
         OutputHelper.setFlag();
+        temSymbolTable = new HashMap<>();
+        currentScope = null;
+        hopeRetType = new Type();
         currentScope = new GlobalScope(null);
         visitCompUnit(ctx.compUnit());
         return null;
@@ -18,7 +21,7 @@ public class Visitor extends SysYParserBaseVisitor {
     @Override
     public Void visitFuncDef(SysYParser.FuncDefContext ctx) {
         String funcName = ctx.IDENT().getText();
-        if (currentScope.findWholeScope(funcName) != null) { // curScope为当前的作用域
+        if (currentScope.findCurrentScope(funcName) != null) { // curScope为当前的作用域
             OutputHelper.printSemanticError(ErrorType.REDEF_FUNC, ctx.IDENT().getSymbol().getLine(),
                     ctx.IDENT().getText());
             return null;
