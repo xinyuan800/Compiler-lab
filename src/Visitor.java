@@ -160,6 +160,47 @@ public class Visitor extends SysYParserBaseVisitor{
     }
 
     @Override
+    public Type visitExp1(SysYParser.Exp1Context ctx) {
+        return (Type) visit(ctx.exp());
+    }
+
+    @Override
+    public Type visitExp2(SysYParser.Exp2Context ctx) {
+        return visitLVal(ctx.lVal());
+    }
+
+    @Override
+    public Type visitExp4(SysYParser.Exp4Context ctx) {
+        return (Type) visit(ctx.exp());
+    }
+
+    @Override
+    public Type visitExp5(SysYParser.Exp5Context ctx) {
+        Type typeL = (Type) visit(ctx.exp(0));
+        if(typeL==null){return null;}
+        Type typeR = (Type) visit(ctx.exp(1));
+        if(typeR==null){return null;}
+        if(!comType(typeL,typeR)){
+            OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
+            return null;
+        }
+        return null;
+    }
+
+    @Override
+    public Object visitExp6(SysYParser.Exp6Context ctx) {
+        Type typeL = (Type) visit(ctx.exp(0));
+        if(typeL==null){return null;}
+        Type typeR = (Type) visit(ctx.exp(1));
+        if(typeR==null){return null;}
+        if(!comType(typeL,typeR)){
+            OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
+            return null;
+        }
+        return null;
+    }
+
+    @Override
     public Type visitFuncCall(SysYParser.FuncCallContext ctx) {
         String name = ctx.IDENT().getText();
         if(currentScope.findWholeScope(name)==null){
@@ -170,7 +211,12 @@ public class Visitor extends SysYParserBaseVisitor{
             OutputHelper.printSemanticError(ErrorType.FUNC_CALL_ON_VARIABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
-        return null;
+        return currentScope.findWholeScope(name).getType();
+    }
+
+    @Override
+    public Type visitExp3(SysYParser.Exp3Context ctx) {
+        return new IntType();
     }
 
     @Override
@@ -182,5 +228,27 @@ public class Visitor extends SysYParserBaseVisitor{
         }
         visit(ctx.exp());
         return null;
+    }
+
+    @Override
+    public Void visitStmt5(SysYParser.Stmt5Context ctx) {
+        Type type = (Type) visit(ctx.exp());
+        if(type==null){return null;}
+        else if(!(type instanceof IntType)){
+            OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH,ctx.getStart().getLine(),ctx.getText());
+            return null;
+        }
+        return null;
+    }
+
+    private boolean comType(Type l,Type r) {
+        if(l instanceof IntType&&r instanceof IntType){
+            return true;
+        }else if(l instanceof ArrayType&&r instanceof ArrayType){
+
+        }else{
+            return false;
+        }
+        return false;
     }
 }

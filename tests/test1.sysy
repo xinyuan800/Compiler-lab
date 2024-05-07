@@ -5,4 +5,5 @@ int c = func(a);
 int d = arr[a];
 int e = a() + b;
 main = 1;
+return main;
 }
