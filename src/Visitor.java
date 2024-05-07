@@ -234,7 +234,7 @@ public class Visitor extends SysYParserBaseVisitor {
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH, ctx.start.getLine(), ctx.getText());
             return null;
         }
-        return null;
+        return typeL;
     }
 
     @Override
@@ -251,7 +251,7 @@ public class Visitor extends SysYParserBaseVisitor {
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH, ctx.start.getLine(), ctx.getText());
             return null;
         }
-        return null;
+        return typeR;
     }
 
     @Override
