@@ -136,6 +136,7 @@ public class Visitor extends SysYParserBaseVisitor {
             VariableSymbol variableSymbol = new VariableSymbol(varName, arrayType);
             for (int i = 0; i < ctx.L_BRACKT().size() - 1; i++) {
                 arrayType.setContained(new ArrayType());
+                arrayType =(ArrayType) arrayType.getContained();
             }
             arrayType.setContained(new IntType());
             currentScope.define(variableSymbol);
