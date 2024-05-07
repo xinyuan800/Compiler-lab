@@ -64,7 +64,7 @@ public class Visitor extends SysYParserBaseVisitor {
     public Symbol visitFuncFParam(SysYParser.FuncFParamContext ctx) {
         String name = ctx.IDENT().getText();
         if (temSymbolTable.containsKey(name)) {
-            OutputHelper.printSemanticError(ErrorType.REDEF_VAR,ctx.IDENT().getSymbol().getLine(),ctx.getText());
+            //OutputHelper.printSemanticError(ErrorType.REDEF_VAR,ctx.IDENT().getSymbol().getLine(),ctx.getText());
             return null;
         } else if (!ctx.L_BRACKT().isEmpty()) {
             return new VariableSymbol(name, new ArrayType(new IntType(), 0));
