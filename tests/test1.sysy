@@ -1,7 +1,7 @@
-int b(){
+int b(int i,int i){
 return 0;
 }
 int main(){
-int a = b;//函数调用没有括号
+int a = b(0);//函数调用没有括号
 a=b;//同上
 }
