@@ -80,7 +80,12 @@ public class Visitor extends SysYParserBaseVisitor {
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-                visit(ctx.initVal());
+                Type type =  visitInitVal(ctx.initVal());
+                if(type==null){return null;}
+                else if(!comType(type,new IntType())){
+                    OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                    return null;
+                }
             }
             currentScope.define(new VariableSymbol(varName, new IntType()));
         } else { // 数组
@@ -94,6 +99,11 @@ public class Visitor extends SysYParserBaseVisitor {
             currentScope.define(variableSymbol);
         }
         return null;
+    }
+
+    @Override
+    public Type visitInitVal(SysYParser.InitValContext ctx) {
+        return (Type) visit(ctx.exp());
     }
 
     @Override
@@ -113,7 +123,12 @@ public class Visitor extends SysYParserBaseVisitor {
         }
         if (ctx.constExp().isEmpty()) {     //非数组
             if (ctx.ASSIGN() != null) {     // 包含定义语句
-                visit(ctx.constInitVal());
+                Type type = visitConstInitVal(ctx.constInitVal());
+                if(type==null){return null;}
+                else if(!comType(type,new IntType())){
+                    OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                    return null;
+                }
             }
             currentScope.define(new VariableSymbol(varName, new IntType()));
         } else { // 数组
@@ -126,6 +141,16 @@ public class Visitor extends SysYParserBaseVisitor {
             currentScope.define(variableSymbol);
         }
         return null;
+    }
+
+    @Override
+    public Type visitConstInitVal(SysYParser.ConstInitValContext ctx) {
+        return (Type) visitConstExp(ctx.constExp());
+    }
+
+    @Override
+    public Type visitConstExp(SysYParser.ConstExpContext ctx) {
+        return (Type) visit(ctx.exp());
     }
 
     @Override
