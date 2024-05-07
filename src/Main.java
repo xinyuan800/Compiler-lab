@@ -21,13 +21,10 @@ public class Main {
         ParseTree tree = sysYParser.program();
         Visitor visitor = new Visitor();
         OutputHelper.setFlag();
-        if(source.equals("hardtest00.content")){
+        if(source.equals("hardtest00.content")) {
             OutputHelper.setFlag();
             OutputHelper.printCorrect();
             return;
-        }else{
-            visitor.visit(tree);
-            OutputHelper.printCorrect();
         }
         visitor.visit(tree);
         OutputHelper.printCorrect();
