@@ -16,10 +16,6 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(sysYLexer);
         SysYParser sysYParser = new SysYParser(tokens);
 
-        if(Objects.equals(source, "hardtest00.sysy")){
-            OutputHelper.printCorrect();
-            return;
-        }
         //start parser program
         ParseTree tree = sysYParser.program();
         Visitor visitor = new Visitor();
