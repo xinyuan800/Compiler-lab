@@ -3,7 +3,7 @@ import java.util.HashMap;
 public abstract class OutputHelper {
     private static boolean flag = true;
     public static void printSemanticError(ErrorType errorType, int line, String errorMsg){
-        if(errorType==ErrorType.FUNC_UNDEF){
+        if(errorType==ErrorType.REDEF_VAR){
             flag = false;
             System.err.println("Error type "+(errorType.ordinal()+1)+" at Line "+line+":");
         }
