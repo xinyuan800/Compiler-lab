@@ -315,15 +315,15 @@ public class Visitor extends SysYParserBaseVisitor {
     @Override
     public Void visitStmt1(SysYParser.Stmt1Context ctx) {
         Type typeL = visitLVal(ctx.lVal());
-        if(typeL==null){
-            return null;
-        }
+//        if(typeL==null){
+//            return null;
+//        }
         if (typeL instanceof FunctionType) {
             OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC, ctx.lVal().IDENT().getSymbol().getLine(), ctx.getText());
             return null;
         }
         Type typeR = (Type) visit(ctx.exp());
-        if (typeR == null) {
+        if (typeL==null||typeR == null) {
             return null;
         }
         if (typeR instanceof FunctionType) {
