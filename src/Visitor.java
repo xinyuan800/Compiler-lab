@@ -88,6 +88,7 @@ public class Visitor extends SysYParserBaseVisitor{
             VariableSymbol variableSymbol = new VariableSymbol(varName,arrayType);
             for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
                 arrayType.setContained(new ArrayType());
+                arrayType = (ArrayType) arrayType.getContained();
             }
             arrayType.setContained(new IntType());
             currentScope.define(variableSymbol);
@@ -152,6 +153,23 @@ public class Visitor extends SysYParserBaseVisitor{
         }else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
             OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
+        }
+        Type type = currentScope.findWholeScope(name).getType();
+        if(type instanceof ArrayType){
+            if(ctx.L_BRACKT().isEmpty()){
+                return type;
+            }else{
+                ArrayType arrayType = (ArrayType) type;
+                for(int i=0;i<ctx.L_BRACKT().size()-1;i++){
+                    if(arrayType.getContained() instanceof IntType){
+                        OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                        return null;
+                    }else{
+                        arrayType = (ArrayType) arrayType.getContained();
+                    }
+                }
+                return arrayType.getContained();
+            }
         }
         return  currentScope.findWholeScope(name).getType();
     }
@@ -249,10 +267,19 @@ public class Visitor extends SysYParserBaseVisitor{
         if(l instanceof IntType&&r instanceof IntType){
             return true;
         }else if(l instanceof ArrayType&&r instanceof ArrayType){
-
+            ArrayType arrayTypeL = (ArrayType) l;
+            ArrayType arrayTypeR = (ArrayType) r;
+            while(arrayTypeL.getContained() instanceof ArrayType&&arrayTypeR.getContained() instanceof ArrayType){
+                arrayTypeL = (ArrayType) arrayTypeL.getContained();
+                arrayTypeR = (ArrayType) arrayTypeR.getContained();
+            }
+            if(arrayTypeL.getContained() instanceof IntType && arrayTypeR.getContained() instanceof IntType){
+                return true;
+            }else{
+                return false;
+            }
         }else{
             return false;
         }
-        return false;
     }
 }
