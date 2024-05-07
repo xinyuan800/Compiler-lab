@@ -19,7 +19,7 @@ public class Main {
         Visitor visitor = new Visitor();
         OutputHelper.setFlag();
         visitor.visit(tree);
-        //OutputHelper.printCorrect();
+        OutputHelper.printCorrect();
     }
 
 }
