@@ -9,7 +9,7 @@ public abstract class OutputHelper {
 
     public static void printCorrect(){
         if(flag){
-            System.err.println("No semantic errors in the program!");
+            System.err.print("No semantic errors in the program!");
         }
     }
 
