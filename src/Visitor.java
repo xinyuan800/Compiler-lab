@@ -30,7 +30,7 @@ public class Visitor extends SysYParserBaseVisitor {
         hopeRetType = retType;
         if (ctx.funcFParams() != null) { // 如有入参，处理形参，添加形参信息等
             temSymbolTable.clear();
-            temSymbolTable = visitFuncFParams(ctx.funcFParams());
+            visitFuncFParams(ctx.funcFParams());
         }
         ArrayList<Type> paramsTyList = new ArrayList<>();
         temSymbolTable.forEach((key, value) -> {
@@ -45,22 +45,22 @@ public class Visitor extends SysYParserBaseVisitor {
     }
 
     @Override
-    public HashMap<String, Symbol> visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
-        HashMap<String, Symbol> paramsSymbol = new HashMap<>();
+    public Void  visitFuncFParams(SysYParser.FuncFParamsContext ctx) {
         for (int i = 0; i < ctx.funcFParam().size(); i++) {
             String name = ctx.funcFParam(i).IDENT().getText();
             Symbol symbol = visitFuncFParam(ctx.funcFParam(i));
             if (symbol != null) {
-                paramsSymbol.put(name, symbol);
+                temSymbolTable.put(name,symbol);
             }
         }
-        return paramsSymbol;
+        return null;
     }
 
     @Override
     public Symbol visitFuncFParam(SysYParser.FuncFParamContext ctx) {
         String name = ctx.IDENT().getText();
         if (temSymbolTable.containsKey(name)) {
+            OutputHelper.printSemanticError(ErrorType.REDEF_VAR,ctx.IDENT().getSymbol().getLine(),ctx.getText());
             return null;
         } else if (!ctx.L_BRACKT().isEmpty()) {
             return new VariableSymbol(name, new ArrayType(new IntType(), 0));
