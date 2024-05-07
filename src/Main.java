@@ -17,6 +17,7 @@ public class Main {
         //start parser program
         ParseTree tree = sysYParser.program();
         Visitor visitor = new Visitor();
+        OutputHelper.setFlag();
         visitor.visit(tree);
         OutputHelper.printCorrect();
     }
