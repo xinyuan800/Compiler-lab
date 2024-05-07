@@ -6,6 +6,7 @@ public class Visitor extends SysYParserBaseVisitor {
 
     private HashMap<String, Symbol> temSymbolTable = new HashMap<>();
 
+    private Type hopeRetType = new Type();
     @Override
     public Void visitProgram(SysYParser.ProgramContext ctx) {
         currentScope = new GlobalScope(null);
@@ -21,7 +22,12 @@ public class Visitor extends SysYParserBaseVisitor {
                     ctx.IDENT().getText());
             return null;
         }
-        Type retType = new IntType();
+        Type retType = new VoidType();
+        String typeStr = ctx.getChild(0).getText();
+        if(typeStr.equals("int")){
+            retType = new IntType();
+        }
+        hopeRetType = retType;
         if (ctx.funcFParams() != null) { // 如有入参，处理形参，添加形参信息等
             temSymbolTable.clear();
             temSymbolTable = visitFuncFParams(ctx.funcFParams());
@@ -333,8 +339,10 @@ public class Visitor extends SysYParserBaseVisitor {
     @Override
     public Void visitStmt5(SysYParser.Stmt5Context ctx) {
         if (ctx.exp()==null) {
-            OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH, ctx.getStart().getLine(), ctx.getText());
-            return null;
+            if(!(hopeRetType instanceof VoidType)){
+                OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH, ctx.getStart().getLine(), ctx.getText());
+                return null;
+            }
         } else {
             Type type = (Type) visit(ctx.exp());
             if (type == null) {
@@ -345,6 +353,7 @@ public class Visitor extends SysYParserBaseVisitor {
                 return null;
             }
         }
+        hopeRetType = null;
         return null;
     }
 
