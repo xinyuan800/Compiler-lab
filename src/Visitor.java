@@ -172,6 +172,7 @@ public class Visitor extends SysYParserBaseVisitor {
         temSymbolTable.forEach((key, value) -> {
             currentScope.define(value);
         });
+        temSymbolTable.clear();
 
         ctx.blockItem().forEach(this::visit); // 依次visit block中的节点
         //切换回父级作用域
