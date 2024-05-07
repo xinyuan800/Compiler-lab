@@ -21,10 +21,7 @@ public class Visitor extends SysYParserBaseVisitor{
                     ctx.IDENT().getText());
             return null;
         }
-        Type retType = new VoidType();
-        String typeStr = ctx.getChild(0).getText();
-        if (typeStr.equals("int"))
-            retType = new IntType();
+        Type retType = new IntType();
         if (ctx.funcFParams() != null) { // 如有入参，处理形参，添加形参信息等
             temSymbolTable.clear();
             temSymbolTable = visitFuncFParams(ctx.funcFParams());
@@ -152,7 +149,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
-        } else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
+        }else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
             OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
@@ -205,8 +202,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.FUNC_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
-        }
-        if(currentScope.findWholeScope(name) instanceof VariableSymbol){
+        }else if(currentScope.findWholeScope(name) instanceof VariableSymbol){
             OutputHelper.printSemanticError(ErrorType.FUNC_CALL_ON_VARIABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
         }
@@ -226,7 +222,15 @@ public class Visitor extends SysYParserBaseVisitor{
             OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.lVal().IDENT().getSymbol().getLine(),ctx.getText());
             return null;
         }
-        visit(ctx.exp());
+        Type typeR = (Type) visit(ctx.exp());
+        if(typeR==null){return null;}
+        if(typeR instanceof FunctionType){
+            typeR = ((FunctionType) typeR).retTy;
+        }
+        if(!comType(typeL,typeR)){
+            OutputHelper.printSemanticError(ErrorType.SIGN_DISMATCH,ctx.lVal().IDENT().getSymbol().getLine(),ctx.getText());
+            return null;
+        }
         return null;
     }
 
