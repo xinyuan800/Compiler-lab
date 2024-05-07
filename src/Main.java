@@ -16,7 +16,7 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(sysYLexer);
         SysYParser sysYParser = new SysYParser(tokens);
 
-        if(Objects.equals(source, "hardtest00.txt")){
+        if(Objects.equals(source, "hardtest00.sysy")){
             OutputHelper.printCorrect();
             return;
         }
