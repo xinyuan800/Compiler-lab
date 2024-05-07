@@ -344,13 +344,18 @@ public class Visitor extends SysYParserBaseVisitor {
                 return null;
             }
         } else {
-            Type type = (Type) visit(ctx.exp());
-            if (type == null) {
-                return null;
-            }
-            if (!(type instanceof IntType)) {
+            if(hopeRetType instanceof VoidType){
                 OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH, ctx.getStart().getLine(), ctx.getText());
                 return null;
+            }else{
+                Type type = (Type) visit(ctx.exp());
+                if (type == null) {
+                    return null;
+                }
+                if (!(type instanceof IntType)) {
+                    OutputHelper.printSemanticError(ErrorType.FUNR_DISMATCH, ctx.getStart().getLine(), ctx.getText());
+                    return null;
+                }
             }
         }
         hopeRetType = null;
