@@ -152,11 +152,10 @@ public class Visitor extends SysYParserBaseVisitor{
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
+        } else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
+            OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+            return null;
         }
-//        else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
-//            OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-//            return null;
-//        }
         return  currentScope.findWholeScope(name).getType();
     }
 
@@ -181,7 +180,7 @@ public class Visitor extends SysYParserBaseVisitor{
         if(typeL==null){return null;}
         Type typeR = (Type) visit(ctx.exp(1));
         if(typeR==null){return null;}
-        if(!comType(typeL,typeR)){
+        if(!(typeL instanceof IntType && typeR instanceof IntType)){
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
             return null;
         }
@@ -194,11 +193,10 @@ public class Visitor extends SysYParserBaseVisitor{
         if(typeL==null){return null;}
         Type typeR = (Type) visit(ctx.exp(1));
         if(typeR==null){return null;}
-        if(!comType(typeL,typeR)){
+        if(!(typeL instanceof IntType && typeR instanceof IntType)){
             OutputHelper.printSemanticError(ErrorType.OP_DISMATCH,ctx.start.getLine(),ctx.getText());
             return null;
-        }
-        return null;
+        }        return null;
     }
 
     @Override
@@ -223,6 +221,7 @@ public class Visitor extends SysYParserBaseVisitor{
     @Override
     public Void visitStmt1(SysYParser.Stmt1Context ctx) {
         Type typeL = visitLVal(ctx.lVal());
+        if(typeL==null){return null;}
         if(typeL instanceof FunctionType){
             OutputHelper.printSemanticError(ErrorType.SIGN_ON_FUNC,ctx.lVal().IDENT().getSymbol().getLine(),ctx.getText());
             return null;
