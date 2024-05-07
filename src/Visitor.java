@@ -9,6 +9,7 @@ public class Visitor extends SysYParserBaseVisitor {
     private Type hopeRetType = new Type();
     @Override
     public Void visitProgram(SysYParser.ProgramContext ctx) {
+        OutputHelper.setFlag();
         currentScope = new GlobalScope(null);
         visitCompUnit(ctx.compUnit());
         return null;
