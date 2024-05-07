@@ -64,7 +64,7 @@ public class Visitor extends SysYParserBaseVisitor {
     public Symbol visitFuncFParam(SysYParser.FuncFParamContext ctx) {
         String name = ctx.IDENT().getText();
         if (temSymbolTable.containsKey(name)) {
-            //OutputHelper.printSemanticError(ErrorType.REDEF_VAR,ctx.IDENT().getSymbol().getLine(),ctx.getText());
+            OutputHelper.printSemanticError(ErrorType.REDEF_VAR,ctx.IDENT().getSymbol().getLine(),ctx.getText());
             return null;
         } else if (!ctx.L_BRACKT().isEmpty()) {
             return new VariableSymbol(name, new ArrayType(new IntType(), 0));
@@ -85,7 +85,7 @@ public class Visitor extends SysYParserBaseVisitor {
     public Void visitVarDef(SysYParser.VarDefContext ctx) {
         String varName = ctx.IDENT().getText(); // c or d
         if (currentScope.findCurrentScope(varName) != null) {
-            OutputHelper.printSemanticError(ErrorType.REDEF_VAR, ctx.IDENT().getSymbol().getLine(), ctx.IDENT().getText());
+            //OutputHelper.printSemanticError(ErrorType.REDEF_VAR, ctx.IDENT().getSymbol().getLine(), ctx.IDENT().getText());
             return null;
         }
         if (ctx.constExp().isEmpty()) {     //非数组
