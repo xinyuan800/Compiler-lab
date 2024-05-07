@@ -128,7 +128,7 @@ public class Visitor extends SysYParserBaseVisitor {
     public Void visitConstDef(SysYParser.ConstDefContext ctx) {
         String varName = ctx.IDENT().getText(); // c or d
         if (currentScope.findCurrentScope(varName) != null) {
-            OutputHelper.printSemanticError(ErrorType.REDEF_VAR, ctx.IDENT().getSymbol().getLine(), ctx.IDENT().getText());
+            //OutputHelper.printSemanticError(ErrorType.REDEF_VAR, ctx.IDENT().getSymbol().getLine(), ctx.IDENT().getText());
             return null;
         }
         if (ctx.constExp().isEmpty()) {     //非数组
