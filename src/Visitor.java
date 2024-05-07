@@ -56,7 +56,7 @@ public class Visitor extends SysYParserBaseVisitor {
         String name = ctx.IDENT().getText();
         if (temSymbolTable.containsKey(name)) {
             return null;
-        } else if (ctx.L_BRACKT() != null) {
+        } else if (!ctx.L_BRACKT().isEmpty()) {
             return new VariableSymbol(name, new ArrayType(new IntType(), 0));
         } else {
             return new VariableSymbol(name, new IntType());
@@ -238,7 +238,41 @@ public class Visitor extends SysYParserBaseVisitor {
             OutputHelper.printSemanticError(ErrorType.FUNC_CALL_ON_VARIABLE, ctx.IDENT().getSymbol().getLine(), ctx.IDENT().getText());
             return null;
         }
+        ArrayList<Type> typeArrayList = ((FunctionType)currentScope.findWholeScope(name).getType()).paramsType;
+        if(ctx.funcRParams()==null){
+            if(!typeArrayList.isEmpty()){
+                OutputHelper.printSemanticError(ErrorType.PARAM_NOT_APPLICABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                return null;
+            }
+        }else{
+            ArrayList<Type> paramsTypeList = visitFuncRParams(ctx.funcRParams());
+            if(paramsTypeList.size()!=typeArrayList.size()){
+                OutputHelper.printSemanticError(ErrorType.PARAM_NOT_APPLICABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                return null;
+            }else {
+                for(int i=0;i< paramsTypeList.size();i++){
+                    if(!comType(paramsTypeList.get(i),typeArrayList.get(i))){
+                        OutputHelper.printSemanticError(ErrorType.PARAM_NOT_APPLICABLE,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+                        return null;
+                    }
+                }
+            }
+        }
         return ((FunctionType)currentScope.findWholeScope(name).getType()).retTy;
+    }
+
+    @Override
+    public ArrayList<Type> visitFuncRParams(SysYParser.FuncRParamsContext ctx) {
+        ArrayList<Type> arrayList = new ArrayList<>();
+        for(int i=0;i<ctx.param().size();i++){
+            arrayList.add(visitParam(ctx.param(i)));
+        }
+        return arrayList;
+    }
+
+    @Override
+    public Type visitParam(SysYParser.ParamContext ctx) {
+        return (Type) visit(ctx.exp());
     }
 
     @Override
