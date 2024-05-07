@@ -152,10 +152,11 @@ public class Visitor extends SysYParserBaseVisitor{
         if(currentScope.findWholeScope(name)==null){
             OutputHelper.printSemanticError(ErrorType.VAR_UNDEF,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
             return null;
-        }else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
-            OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
-            return null;
         }
+//        else if(!(currentScope.findWholeScope(name).getType() instanceof ArrayType)&&(!ctx.L_BRACKT().isEmpty())){
+//            OutputHelper.printSemanticError(ErrorType.INDEX_ON_NON_ARRAY,ctx.IDENT().getSymbol().getLine(),ctx.IDENT().getText());
+//            return null;
+//        }
         return  currentScope.findWholeScope(name).getType();
     }
 
