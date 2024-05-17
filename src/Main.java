@@ -1,8 +1,6 @@
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
-
+import org.bytedeco.llvm.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.*;
 import java.io.IOException;
-import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -11,22 +9,10 @@ public class Main {
         }
         String source = args[0];
 
-        CharStream input = CharStreams.fromFileName(source);
-        SysYLexer sysYLexer = new SysYLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(sysYLexer);
-        SysYParser sysYParser = new SysYParser(tokens);
+        public static final BytePointer error = new BytePointer();
 
-
-        //start parser program
-        ParseTree tree = sysYParser.program();
-        Visitor visitor = new Visitor();
-        OutputHelper.setFlag();
-//        if(source.contains("hardtest00")||source.contains("hardtest04")||source.contains("hardtest05")) {
-//            OutputHelper.setFlag();
-//            OutputHelper.printCorrect();
-//            return;
-//        }
-        visitor.visit(tree);
-        OutputHelper.printCorrect();
+        if (LLVMPrintModuleToFile(module, args[1], error) != 0) {    // module是你自定义的LLVMModuleRef对象
+            LLVMDisposeMessage(error);
+        }
     }
 }
