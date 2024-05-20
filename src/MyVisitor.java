@@ -8,9 +8,7 @@ import static org.bytedeco.llvm.global.LLVM.*;
 
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMModuleRef module;
-
     private LLVMBuilderRef builder;
-
     LLVMTypeRef i32Type;
 
     public LLVMModuleRef getModule() {
@@ -29,13 +27,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitProgram(SysYParser.ProgramContext ctx) {
-        //创建module
         module = LLVMModuleCreateWithName("module");
-
-        //初始化IRBuilder，后续将使用这个builder去生成LLVM IR
         builder = LLVMCreateBuilder();
-
-        //考虑到我们的语言中仅存在int一个基本类型，可以通过下面的语句为LLVM的int型重命名方便以后使用
         i32Type = LLVMInt32Type();
         visitCompUnit(ctx.compUnit());
         return null;
@@ -48,33 +41,84 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
-        //生成返回值类型
         LLVMTypeRef returnType = i32Type;
-
-        //生成函数类型
         PointerPointer<Pointer> argumentTypes = new PointerPointer<>(0);
-        //若仅需一个参数也可以使用如下方式直接生成函数类型
-        LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, /* argumentCount */ 0, /* isVariadic */ 0);
-
-        //生成函数，即向之前创建的module中添加函数
-        LLVMValueRef function = LLVMAddFunction(module, /*functionName:String*/ctx.IDENT().getText(), ft);
-        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function,"mainEntry");
-        LLVMPositionBuilderAtEnd(builder, mainEntry);//后续生成的指令将追加在block1的后面
-
-        return super.visitFuncDef(ctx);
+        LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, 0, 0);
+        LLVMValueRef function = LLVMAddFunction(module, ctx.IDENT().getText(), ft);
+        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, "mainEntry");
+        LLVMPositionBuilderAtEnd(builder, mainEntry);
+        visitBlock(ctx.block());
+        return function;
     }
 
     @Override
     public LLVMValueRef visitStmt5(SysYParser.Stmt5Context ctx) {
-        LLVMValueRef result = visitExp(ctx.exp());
-        //函数返回指令
-        LLVMBuildRet(builder, /*result:LLVMValueRef*/result);
-        return super.visitStmt5(ctx);
+        LLVMValueRef result = visit(ctx.exp()); // 获取exp的结果
+        LLVMBuildRet(builder, result); // 使用result作为返回值
+        return null;
     }
 
     @Override
-    public LLVMValueRef visitExp(SysYParser.ExpContext ctx) {
-
-        return super.visitExp(ctx);
+    public LLVMValueRef visitExp1(SysYParser.Exp1Context ctx) {
+        return visit(ctx.exp());
     }
+
+    @Override
+    public LLVMValueRef visitExp2(SysYParser.Exp2Context ctx) {
+        return super.visitExp2(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitNum(SysYParser.NumContext ctx) {
+        int value = Integer.parseInt(ctx.number().INTEGER_CONST().getText());
+        return LLVMConstInt(i32Type, value, 0);
+    }
+
+    @Override
+    public LLVMValueRef visitFunCall(SysYParser.FunCallContext ctx) {
+        return super.visitFunCall(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitExp3(SysYParser.Exp3Context ctx) {
+        LLVMValueRef operand = visit(ctx.exp());
+        if (ctx.unaryOp().PLUS() != null) {
+            return operand; // +exp
+        } else if (ctx.unaryOp().MINUS() != null) {
+            return LLVMBuildNeg(builder, operand, "negtmp"); // -exp
+        } else if (ctx.unaryOp().NOT() != null) {
+            return LLVMBuildNot(builder, operand, "nottmp"); // !exp
+        } else {
+            throw new RuntimeException("Unknown unary operator");
+        }
+    }
+
+    @Override
+    public LLVMValueRef visitExp4(SysYParser.Exp4Context ctx) {
+        LLVMValueRef left = visit(ctx.exp(0));
+        LLVMValueRef right = visit(ctx.exp(1));
+        if (ctx.MUL() != null) {
+            return LLVMBuildMul(builder, left, right, "multmp");
+        } else if (ctx.DIV() != null) {
+            return LLVMBuildSDiv(builder, left, right, "divtmp");
+        } else if (ctx.MOD() != null) {
+            return LLVMBuildSRem(builder, left, right, "modtmp");
+        } else {
+            throw new RuntimeException("Unknown binary operator");
+        }
+    }
+
+    @Override
+    public LLVMValueRef visitExp5(SysYParser.Exp5Context ctx) {
+        LLVMValueRef left = visit(ctx.exp(0));
+        LLVMValueRef right = visit(ctx.exp(1));
+        if (ctx.PLUS() != null) {
+            return LLVMBuildAdd(builder, left, right, "addtmp");
+        } else if (ctx.MINUS() != null) {
+            return LLVMBuildSub(builder, left, right, "subtmp");
+        } else {
+            throw new RuntimeException("Unknown binary operator");
+        }
+    }
+}
 }
