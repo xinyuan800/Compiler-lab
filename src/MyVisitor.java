@@ -59,7 +59,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, /* argumentCount */ 0, /* isVariadic */ 0);
 
         //生成函数，即向之前创建的module中添加函数
-        LLVMValueRef function = LLVMAddFunction(module, /*functionName:String*/"function", ft);
+        LLVMValueRef function = LLVMAddFunction(module, /*functionName:String*/ctx.IDENT().getText(), ft);
         return null;
     }
 }
