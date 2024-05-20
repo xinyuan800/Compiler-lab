@@ -1,5 +1,7 @@
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.LLVMBuilderRef;
 import org.bytedeco.llvm.LLVM.LLVMModuleRef;
 import org.bytedeco.llvm.LLVM.LLVMTypeRef;
@@ -43,6 +45,21 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCompUnit(SysYParser.CompUnitContext ctx) {
+        return null;
+    }
+
+    @Override
+    public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
+        //生成返回值类型
+        LLVMTypeRef returnType = i32Type;
+
+        //生成函数类型
+        PointerPointer<Pointer> argumentTypes = new PointerPointer<>(0);
+        //若仅需一个参数也可以使用如下方式直接生成函数类型
+        LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, /* argumentCount */ 0, /* isVariadic */ 0);
+
+        //生成函数，即向之前创建的module中添加函数
+        LLVMValueRef function = LLVMAddFunction(module, /*functionName:String*/"function", ft);
         return null;
     }
 }
