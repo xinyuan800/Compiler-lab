@@ -2,10 +2,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
-import org.bytedeco.llvm.LLVM.LLVMBuilderRef;
-import org.bytedeco.llvm.LLVM.LLVMModuleRef;
-import org.bytedeco.llvm.LLVM.LLVMTypeRef;
-import org.bytedeco.llvm.LLVM.LLVMValueRef;
+import org.bytedeco.llvm.LLVM.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
@@ -46,10 +43,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCompUnit(SysYParser.CompUnitContext ctx) {
-        for(int i=0;i<ctx.children.size();i++){
-            visit(ctx.getChild(i));
-        }
-        return null;
+        return super.visitCompUnit(ctx);
     }
 
     @Override
@@ -64,6 +58,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         //生成函数，即向之前创建的module中添加函数
         LLVMValueRef function = LLVMAddFunction(module, /*functionName:String*/ctx.IDENT().getText(), ft);
-        return null;
+        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function,"mainEntry");
+        LLVMPositionBuilderAtEnd(builder, mainEntry);//后续生成的指令将追加在block1的后面
+
+        return super.visitFuncDef(ctx);
     }
 }
