@@ -45,7 +45,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         PointerPointer<Pointer> argumentTypes = new PointerPointer<>(0);
         LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, 0, 0);
         LLVMValueRef function = LLVMAddFunction(module, ctx.IDENT().getText(), ft);
-        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, "mainEntry");
+        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, ctx.IDENT().getText()+"Entry");
         LLVMPositionBuilderAtEnd(builder, mainEntry);
         visitBlock(ctx.block());
         return function;
