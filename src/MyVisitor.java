@@ -87,7 +87,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         } else if (ctx.unaryOp().MINUS() != null) {
             return LLVMBuildNeg(builder, operand, "negtmp"); // -exp
         } else if (ctx.unaryOp().NOT() != null) {
-            return LLVMBuildNot(builder, operand, "nottmp"); // !exp
+            LLVMValueRef  tmp = LLVMBuildICmp(builder, LLVMIntNE, LLVMConstInt(i32Type, 0, 0), operand, "tmp_");
+            tmp = LLVMBuildXor(builder, tmp, LLVMConstInt(LLVMInt1Type(), 1, 0), "tmp_");
+            tmp = LLVMBuildZExt(builder, tmp, i32Type, "tmp_");
+            return tmp;// !exp
         } else {
             throw new RuntimeException("Unknown unary operator");
         }
