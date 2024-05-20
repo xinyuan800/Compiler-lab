@@ -71,4 +71,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildRet(builder, /*result:LLVMValueRef*/result);
         return super.visitStmt5(ctx);
     }
+
+    @Override
+    public LLVMValueRef visitExp(SysYParser.ExpContext ctx) {
+
+        return super.visitExp(ctx);
+    }
 }

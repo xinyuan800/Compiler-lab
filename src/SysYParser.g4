@@ -68,13 +68,13 @@ stmt
      | RETURN (exp)? SEMICOLON #stmt5
      ;
 exp
-   : L_PAREN exp R_PAREN
-   | lVal
-   | number
-   | IDENT L_PAREN funcRParams? R_PAREN
-   | unaryOp exp
-   | exp (MUL | DIV | MOD) exp
-   | exp (PLUS | MINUS) exp
+   : L_PAREN exp R_PAREN #exp1
+   | lVal#exp2
+   | number#num
+   | IDENT L_PAREN funcRParams? R_PAREN#funCall
+   | unaryOp exp#exp3
+   | exp (MUL | DIV | MOD) exp#exp4
+   | exp (PLUS | MINUS) exp#exp5
    ;
 
 cond
