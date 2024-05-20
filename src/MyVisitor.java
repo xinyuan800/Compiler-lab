@@ -66,8 +66,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitStmt5(SysYParser.Stmt5Context ctx) {
-        LLVMValueRef result =
-
+        LLVMValueRef result = visitExp(ctx.exp());
+        //函数返回指令
+        LLVMBuildRet(builder, /*result:LLVMValueRef*/result);
         return super.visitStmt5(ctx);
     }
 }
