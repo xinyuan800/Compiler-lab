@@ -1,0 +1,2 @@
+; ModuleID = 'module'
+source_filename = "module"

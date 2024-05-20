@@ -22,15 +22,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visit(ParseTree tree) {
-        //创建module
-        module = LLVMModuleCreateWithName("module");
-
-        //初始化IRBuilder，后续将使用这个builder去生成LLVM IR
-        builder = LLVMCreateBuilder();
-
-        //考虑到我们的语言中仅存在int一个基本类型，可以通过下面的语句为LLVM的int型重命名方便以后使用
-         i32Type = LLVMInt32Type();
-        return null;
+        return super.visit(tree);
     }
 
     @Override
@@ -40,11 +32,23 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitProgram(SysYParser.ProgramContext ctx) {
+        //创建module
+        module = LLVMModuleCreateWithName("module");
+
+        //初始化IRBuilder，后续将使用这个builder去生成LLVM IR
+        builder = LLVMCreateBuilder();
+
+        //考虑到我们的语言中仅存在int一个基本类型，可以通过下面的语句为LLVM的int型重命名方便以后使用
+        i32Type = LLVMInt32Type();
+        visitCompUnit(ctx.compUnit());
         return null;
     }
 
     @Override
     public LLVMValueRef visitCompUnit(SysYParser.CompUnitContext ctx) {
+        for(int i=0;i<ctx.children.size();i++){
+            visit(ctx.getChild(i));
+        }
         return null;
     }
 
