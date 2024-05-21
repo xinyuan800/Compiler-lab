@@ -146,7 +146,15 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitNum(SysYParser.NumContext ctx) {
-        int value = Integer.parseInt(ctx.number().INTEGER_CONST().getText());
+        String num = ctx.number().INTEGER_CONST().getText();
+        int value = 0;
+        if(num.startsWith("0x")||num.startsWith("0X")){
+            value =  Integer.parseInt(num.substring(2), 16);
+        }else if(num.startsWith("0")&&num.length()>1){
+            value =  Integer.parseInt(num.substring(1), 8);
+        }else{
+            value = Integer.parseInt(ctx.number().INTEGER_CONST().getText());
+        }
         return LLVMConstInt(i32Type, value, 0);
     }
 
