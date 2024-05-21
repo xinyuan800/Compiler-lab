@@ -40,16 +40,30 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     }
 
     @Override
-    public LLVMValueRef visitConstDecl(SysYParser.ConstDeclContext ctx) {
+    public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
+
         //创建一个常量,这里是常数0
-        LLVMValueRef zero = LLVMConstInt(i32Type, 0, /* signExtend */ 0);
+        LLVMValueRef n = visit(ctx.constInitVal());
 
         //创建名为globalVar的全局变量
-        LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/"globalVar");
+        LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
         //为全局变量设置初始化器
-        LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/zero);
-        return super.visitConstDecl(ctx);
+        LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+        return super.visitConstDef(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitVarDef(SysYParser.VarDefContext ctx) {
+        //创建一个常量,这里是常数0
+        LLVMValueRef n = visit(ctx.initVal());
+
+        //创建名为globalVar的全局变量
+        LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
+
+        //为全局变量设置初始化器
+        LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+        return super.visitVarDef(ctx);
     }
 
     @Override
