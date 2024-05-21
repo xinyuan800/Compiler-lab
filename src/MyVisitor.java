@@ -11,6 +11,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMBuilderRef builder;
     LLVMTypeRef i32Type;
 
+    private Scope currentScope = null;
+    private Scope globalScope = null;
+
     public LLVMModuleRef getModule() {
         return module;
     }
@@ -30,7 +33,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         module = LLVMModuleCreateWithName("module");
         builder = LLVMCreateBuilder();
         i32Type = LLVMInt32Type();
+        globalScope = new Scope(null);
+        currentScope = globalScope;
         visitCompUnit(ctx.compUnit());
+
         return null;
     }
 
@@ -41,29 +47,65 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
-
         //创建一个常量,这里是常数0
         LLVMValueRef n = visit(ctx.constInitVal());
 
-        //创建名为globalVar的全局变量
-        LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
+        if(currentScope.equals(globalScope)){
+            //创建名为globalVar的全局变量
+            LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-        //为全局变量设置初始化器
-        LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+            //为全局变量设置初始化器
+            LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+
+            currentScope.define(ctx.IDENT().getText(),globalVar);
+        }else{
+            //int型变量
+            //申请一块能存放int型的内存
+            LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
+
+            //将数值存入该内存
+            LLVMBuildStore(builder, n, pointer);
+
+            currentScope.define(ctx.IDENT().getText(),pointer);
+        }
         return super.visitConstDef(ctx);
     }
 
     @Override
     public LLVMValueRef visitVarDef(SysYParser.VarDefContext ctx) {
-        //创建一个常量,这里是常数0
+          //创建一个常量,这里是常数0
         LLVMValueRef n = visit(ctx.initVal());
 
-        //创建名为globalVar的全局变量
-        LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
+        if(currentScope.equals(globalScope)){
+            //创建名为globalVar的全局变量
+            LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-        //为全局变量设置初始化器
-        LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+            //为全局变量设置初始化器
+            LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
+
+            currentScope.define(ctx.IDENT().getText(),globalVar);
+        }else{
+            //int型变量
+            //申请一块能存放int型的内存
+            LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
+
+            //将数值存入该内存
+            LLVMBuildStore(builder, n, pointer);
+
+            currentScope.define(ctx.IDENT().getText(),pointer);
+        }
         return super.visitVarDef(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitBlock(SysYParser.BlockContext ctx) {
+        Scope scope = new Scope(currentScope);
+        currentScope = scope;
+        for(int i=0;i<ctx.blockItem().size();i++){
+            visit(ctx.blockItem(i));
+        }
+        currentScope = scope.getEnclosingScope();
+        return null;
     }
 
     @Override
@@ -76,6 +118,13 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMPositionBuilderAtEnd(builder, mainEntry);
         visitBlock(ctx.block());
         return function;
+    }
+
+    @Override
+    public LLVMValueRef visitStmt1(SysYParser.Stmt1Context ctx) {
+        LLVMValueRef value = visit(ctx.exp());
+        currentScope.replace(ctx.lVal().IDENT().getText(),value);
+        return super.visitStmt1(ctx);
     }
 
     @Override
@@ -149,5 +198,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         } else {
             throw new RuntimeException("Unknown binary operator");
         }
+    }
+
+    @Override
+    public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
+        LLVMValueRef value = currentScope.resolve(ctx.IDENT().getText());
+        return LLVMBuildLoad(builder,value,ctx.IDENT().getText());
     }
 }
