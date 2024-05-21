@@ -47,13 +47,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
-        //创建一个常量,这里是常数0
-        LLVMValueRef n = visit(ctx.constInitVal());
 
         if(currentScope.equals(globalScope)){
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
+            LLVMValueRef n = visit(ctx.constInitVal());
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -62,24 +61,22 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-
+            LLVMValueRef n = visit(ctx.constInitVal());
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
             currentScope.define(ctx.IDENT().getText(),pointer);
         }
-        return super.visitConstDef(ctx);
+        return null;
     }
 
     @Override
     public LLVMValueRef visitVarDef(SysYParser.VarDefContext ctx) {
-          //创建一个常量,这里是常数0
-        LLVMValueRef n = visit(ctx.initVal());
-
         if(currentScope.equals(globalScope)){
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
-
+            //创建一个常量
+            LLVMValueRef n = visit(ctx.initVal());
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -88,13 +85,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-
+            //创建一个常量,这里是常数0
+            LLVMValueRef n = visit(ctx.initVal());
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
             currentScope.define(ctx.IDENT().getText(),pointer);
         }
-        return super.visitVarDef(ctx);
+        return null;
     }
 
     @Override
@@ -122,8 +120,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitStmt1(SysYParser.Stmt1Context ctx) {
+        LLVMValueRef lastValue = currentScope.resolve(ctx.lVal().getText());
         LLVMValueRef value = visit(ctx.exp());
         currentScope.replace(ctx.lVal().IDENT().getText(),value);
+        LLVMBuildStore(builder,value,lastValue);
         return super.visitStmt1(ctx);
     }
 
