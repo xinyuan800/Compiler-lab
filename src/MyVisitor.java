@@ -123,7 +123,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef lastValue = currentScope.resolve(ctx.lVal().getText());
         LLVMValueRef value = visit(ctx.exp());
         currentScope.replace(ctx.lVal().IDENT().getText(),value);
-        LLVMBuildStore(builder,value,lastValue);
+        LLVMBuildStore(builder,lastValue,value);
         return super.visitStmt1(ctx);
     }
 
