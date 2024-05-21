@@ -40,6 +40,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     }
 
     @Override
+    public LLVMValueRef visitConstDecl(SysYParser.ConstDeclContext ctx) {
+        return super.visitConstDecl(ctx);
+    }
+
+    @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
         LLVMTypeRef returnType = i32Type;
         PointerPointer<Pointer> argumentTypes = new PointerPointer<>(0);
