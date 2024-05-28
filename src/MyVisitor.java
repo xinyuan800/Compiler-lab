@@ -1,5 +1,6 @@
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
@@ -16,7 +17,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     ArrayList<Type> temTable = new ArrayList<>();
 
-    HashMap<String,LLVMValueRef> functions = new HashMap<>();
+    HashMap<String, LLVMValueRef> functions = new HashMap<>();
 
     private Scope currentScope = null;
     private Scope globalScope = null;
@@ -55,7 +56,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitConstDef(SysYParser.ConstDefContext ctx) {
 
-        if(currentScope.equals(globalScope)){
+        if (currentScope.equals(globalScope)) {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
@@ -63,8 +64,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
-            currentScope.define(ctx.IDENT().getText(),globalVar);
-        }else{
+            currentScope.define(ctx.IDENT().getText(), globalVar);
+        } else {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
@@ -72,14 +73,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
-            currentScope.define(ctx.IDENT().getText(),pointer);
+            currentScope.define(ctx.IDENT().getText(), pointer);
         }
         return null;
     }
 
     @Override
     public LLVMValueRef visitVarDef(SysYParser.VarDefContext ctx) {
-        if(currentScope.equals(globalScope)){
+        if (currentScope.equals(globalScope)) {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
             //创建一个常量
@@ -87,8 +88,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
-            currentScope.define(ctx.IDENT().getText(),globalVar);
-        }else{
+            currentScope.define(ctx.IDENT().getText(), globalVar);
+        } else {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
@@ -97,7 +98,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
-            currentScope.define(ctx.IDENT().getText(),pointer);
+            currentScope.define(ctx.IDENT().getText(), pointer);
         }
         return null;
     }
@@ -106,10 +107,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitBlock(SysYParser.BlockContext ctx) {
         Scope scope = new Scope(currentScope);
         currentScope = scope;
-        for(int i=0;i<temTable.size();i++){
-            currentScope.define(temTable.get(i).getName(),temTable.get(i).getValue());
+        for (int i = 0; i < temTable.size(); i++) {
+            currentScope.define(temTable.get(i).getName(), temTable.get(i).getValue());
         }
-        for(int i=0;i<ctx.blockItem().size();i++){
+        for (int i = 0; i < ctx.blockItem().size(); i++) {
             visit(ctx.blockItem(i));
         }
         currentScope = scope.getEnclosingScope();
@@ -119,17 +120,20 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
         LLVMTypeRef returnType = i32Type;
-        int funcRCount = ctx.funcFParams().funcFParam().size();
+        int funcRCount = 0;
         PointerPointer<Pointer> argumentTypes = new PointerPointer<>(funcRCount);
-        for(int i=0;i<funcRCount;i++){
-            argumentTypes.put(i,i32Type);
+        if (ctx.funcFParams() != null) {
+            funcRCount = ctx.funcFParams().funcFParam().size();
+            for (int i = 0; i < funcRCount; i++) {
+                argumentTypes.put(i, i32Type);
+            }
         }
         LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, funcRCount, 0);
         LLVMValueRef function = LLVMAddFunction(module, ctx.IDENT().getText(), ft);
-        functions.put(ctx.IDENT().getText(),function);
-        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, ctx.IDENT().getText()+"Entry");
+        functions.put(ctx.IDENT().getText(), function);
+        LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, ctx.IDENT().getText() + "Entry");
         LLVMPositionBuilderAtEnd(builder, mainEntry);
-        for(int i=0;i<funcRCount;i++){
+        for (int i = 0; i < funcRCount; i++) {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.funcFParams().funcFParam(i).IDENT().getText());
@@ -137,7 +141,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef param = LLVMGetParam(function, i);
             //将数值存入该内存
             LLVMBuildStore(builder, param, pointer);
-            Type pram = new Type(ctx.funcFParams().funcFParam(i).IDENT().getText(),pointer);
+            Type pram = new Type(ctx.funcFParams().funcFParam(i).IDENT().getText(), pointer);
             temTable.add(pram);
         }
         visitBlock(ctx.block());
@@ -148,7 +152,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitStmt1(SysYParser.Stmt1Context ctx) {
         LLVMValueRef lastValue = currentScope.resolve(ctx.lVal().getText());
         LLVMValueRef value = visit(ctx.exp());
-        LLVMBuildStore(builder,value,lastValue);
+        LLVMBuildStore(builder, value, lastValue);
         return null;
     }
 
@@ -173,11 +177,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitNum(SysYParser.NumContext ctx) {
         String num = ctx.number().INTEGER_CONST().getText();
         int value = 0;
-        if(num.startsWith("0x")||num.startsWith("0X")){
-            value =  Integer.parseInt(num.substring(2), 16);
-        }else if(num.startsWith("0")&&num.length()>1){
-            value =  Integer.parseInt(num.substring(1), 8);
-        }else{
+        if (num.startsWith("0x") || num.startsWith("0X")) {
+            value = Integer.parseInt(num.substring(2), 16);
+        } else if (num.startsWith("0") && num.length() > 1) {
+            value = Integer.parseInt(num.substring(1), 8);
+        } else {
             value = Integer.parseInt(ctx.number().INTEGER_CONST().getText());
         }
         return LLVMConstInt(i32Type, value, 0);
@@ -185,26 +189,25 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFunCall(SysYParser.FunCallContext ctx) {
-//        ArrayList<LLVMValueRef> args = new ArrayList<>();
-//        for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
-//            // Visit each parameter node individually
-//            args.add(visit(ctx.funcRParams().param(i)));
-//        }
-        PointerPointer<Pointer> argumentTypes = new PointerPointer<>(ctx.funcRParams().param().size());
-        for(int i=0;i<ctx.funcRParams().param().size();i++){
-            argumentTypes.put(i,i32Type);
+        ArrayList<LLVMValueRef> args = new ArrayList<>();
+        for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
+            // Visit each parameter node individually
+            args.add(visit(ctx.funcRParams().param(i)));
         }
 
         // Convert ArrayList<LLVMValueRef> to LLVMValueRef[]
-//        LLVMValueRef[] llvmValueArray = new LLVMValueRef[args.size()];
-//        llvmValueArray = args.toArray(llvmValueArray);
+        LLVMValueRef[] llvmValueArray = new LLVMValueRef[args.size()];
+        llvmValueArray = args.toArray(llvmValueArray);
+
+        // Create a PointerPointer from LLVMValueRef[]
+        PointerPointer<LLVMValueRef> argsPointer = new PointerPointer<>(llvmValueArray);
 
         // Retrieve the function reference using the function name
         String functionName = ctx.IDENT().getText();
         LLVMValueRef function = functions.get(functionName);
 
         // Build the function call instruction
-        return LLVMBuildCall(builder, function,argumentTypes ,ctx.funcRParams().param().size(), functionName);
+        return LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "retValue");
     }
 
 
@@ -216,7 +219,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         } else if (ctx.unaryOp().MINUS() != null) {
             return LLVMBuildNeg(builder, operand, "negtmp"); // -exp
         } else if (ctx.unaryOp().NOT() != null) {
-            LLVMValueRef  tmp = LLVMBuildICmp(builder, LLVMIntNE, LLVMConstInt(i32Type, 0, 0), operand, "tmp_");
+            LLVMValueRef tmp = LLVMBuildICmp(builder, LLVMIntNE, LLVMConstInt(i32Type, 0, 0), operand, "tmp_");
             tmp = LLVMBuildXor(builder, tmp, LLVMConstInt(LLVMInt1Type(), 1, 0), "tmp_");
             tmp = LLVMBuildZExt(builder, tmp, i32Type, "tmp_");
             return tmp;// !exp
@@ -256,6 +259,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
         LLVMValueRef value = currentScope.resolve(ctx.IDENT().getText());
-        return LLVMBuildLoad(builder,value,ctx.IDENT().getText());
+        return LLVMBuildLoad(builder, value, ctx.IDENT().getText());
     }
 }
