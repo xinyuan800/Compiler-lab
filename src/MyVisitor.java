@@ -5,6 +5,7 @@ import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
@@ -13,7 +14,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMBuilderRef builder;
     LLVMTypeRef i32Type;
 
-    ArrayList<LLVMValueRef> temTable = new ArrayList<>();
+    ArrayList<Type> temTable = new ArrayList<>();
+
+    HashMap<String,LLVMValueRef> functions = new HashMap<>();
 
     private Scope currentScope = null;
     private Scope globalScope = null;
@@ -104,8 +107,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         Scope scope = new Scope(currentScope);
         currentScope = scope;
         while(!temTable.isEmpty()){
-            System.out.println(temTable.removeFirst().toString());
-            currentScope.define(temTable.removeFirst().toString(),temTable.removeFirst());
+            currentScope.define(temTable.getFirst().getName(),temTable.removeFirst().getValue());
         }
         for(int i=0;i<ctx.blockItem().size();i++){
             visit(ctx.blockItem(i));
@@ -124,6 +126,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         LLVMTypeRef ft = LLVMFunctionType(returnType, argumentTypes, funcRCount, 0);
         LLVMValueRef function = LLVMAddFunction(module, ctx.IDENT().getText(), ft);
+        functions.put(ctx.IDENT().getText(),function);
         LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlock(function, ctx.IDENT().getText()+"Entry");
         LLVMPositionBuilderAtEnd(builder, mainEntry);
         for(int i=0;i<funcRCount;i++){
@@ -134,7 +137,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             LLVMValueRef param = LLVMGetParam(function, i);
             //将数值存入该内存
             LLVMBuildStore(builder, param, pointer);
-            temTable.add(pointer);
+            Type pram = new Type(ctx.funcFParams().funcFParam(i).IDENT().getText(),pointer);
+            temTable.add(pram);
         }
         visitBlock(ctx.block());
         return function;
@@ -181,8 +185,28 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFunCall(SysYParser.FunCallContext ctx) {
-        return super.visitFunCall(ctx);
+//        ArrayList<LLVMValueRef> args = new ArrayList<>();
+//        for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
+//            // Visit each parameter node individually
+//            args.add(visit(ctx.funcRParams().param(i)));
+//        }
+        PointerPointer<Pointer> argumentTypes = new PointerPointer<>(ctx.funcRParams().param().size());
+        for(int i=0;i<ctx.funcRParams().param().size();i++){
+            argumentTypes.put(i,i32Type);
+        }
+
+        // Convert ArrayList<LLVMValueRef> to LLVMValueRef[]
+//        LLVMValueRef[] llvmValueArray = new LLVMValueRef[args.size()];
+//        llvmValueArray = args.toArray(llvmValueArray);
+
+        // Retrieve the function reference using the function name
+        String functionName = ctx.IDENT().getText();
+        LLVMValueRef function = functions.get(functionName);
+
+        // Build the function call instruction
+        return LLVMBuildCall(builder, function,argumentTypes ,ctx.funcRParams().param().size(), functionName);
     }
+
 
     @Override
     public LLVMValueRef visitExp3(SysYParser.Exp3Context ctx) {
