@@ -1,6 +1,4 @@
 int a = 0;
-int main() {
-int b = 1;
-b = a;
-return b;
+int main(int i,int x) {
+return 0;
 }

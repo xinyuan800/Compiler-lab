@@ -38,16 +38,4 @@ public class Scope {
         return null;
     }
 
-    public void replace(String name,LLVMValueRef value){
-        LLVMValueRef lastValue = symbols.get(name);
-        if (lastValue!= null) {
-            symbols.replace(name,value);
-        }
-
-        if (this.enclosingScope != null) {
-            enclosingScope.replace(name,value);
-        }
-
-    }
-
 }
