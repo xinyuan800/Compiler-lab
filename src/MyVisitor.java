@@ -106,9 +106,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitBlock(SysYParser.BlockContext ctx) {
         Scope scope = new Scope(currentScope);
         currentScope = scope;
-        while(!temTable.isEmpty()){
-            currentScope.define(temTable.getFirst().getName(),temTable.getFirst().getValue());
-            temTable.removeFirst();
+        for(int i=0;i<temTable.size();i++){
+            currentScope.define(temTable.get(i).getName(),temTable.get(i).getValue());
         }
         for(int i=0;i<ctx.blockItem().size();i++){
             visit(ctx.blockItem(i));
