@@ -107,7 +107,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         Scope scope = new Scope(currentScope);
         currentScope = scope;
         while(!temTable.isEmpty()){
-            currentScope.define(temTable.getFirst().getName(),temTable.removeFirst().getValue());
+            currentScope.define(temTable.getFirst().getName(),temTable.getFirst().getValue());
+            temTable.removeFirst();
         }
         for(int i=0;i<ctx.blockItem().size();i++){
             visit(ctx.blockItem(i));
