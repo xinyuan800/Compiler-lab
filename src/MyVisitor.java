@@ -4,8 +4,11 @@ import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
+import org.bytedeco.llvm.presets.LLVM;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 
 import static org.bytedeco.llvm.global.LLVM.*;
@@ -14,9 +17,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMModuleRef module;
     private LLVMBuilderRef builder;
 
+    private int idx = 0;
+
     private LLVMValueRef currentFunction;
+
     LLVMTypeRef i32Type;
 
+    private Deque<LLVMBasicBlockRef> breakLabel = new ArrayDeque<>();
+    private Deque<LLVMBasicBlockRef> continueLabel = new ArrayDeque<>();
     ArrayList<Type> temTable = new ArrayList<>();
 
     HashMap<String, LLVMValueRef> functions = new HashMap<>();
@@ -116,7 +124,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             visit(ctx.blockItem(i));
         }
         currentScope = scope.getEnclosingScope();
-        currentFunction = null;
         return null;
     }
 
@@ -162,15 +169,167 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
+        LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("true"));
+        LLVMBasicBlockRef falseLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("false"));
+        LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
         LLVMValueRef cond = visit(ctx.cond());
-        return super.visitIfStmt(ctx);
+        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
+        LLVMPositionBuilderAtEnd(builder,trueLabel);
+        visit(ctx.stmt(0));
+        LLVMBuildBr(builder,endLabel);
+        LLVMPositionBuilderAtEnd(builder,falseLabel);
+        if(ctx.ELSE()!=null){
+            visit(ctx.stmt(1));
+        }
+        LLVMBuildBr(builder,endLabel);
+        LLVMPositionBuilderAtEnd(builder,endLabel);
+        return null;
     }
-
-
 
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        return super.visitWhileStmt(ctx);
+        LLVMBasicBlockRef beginLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("while.begin"));
+        LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("true"));
+        LLVMBasicBlockRef falseLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("false"));
+        LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
+        LLVMBuildBr(builder,beginLabel);
+        LLVMPositionBuilderAtEnd(builder,beginLabel);
+        LLVMValueRef cond = visit(ctx.cond());
+        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
+        breakLabel.push(falseLabel);
+        continueLabel.push(trueLabel);
+        LLVMPositionBuilderAtEnd(builder,trueLabel);
+        visit(ctx.stmt());
+        breakLabel.pop();
+        continueLabel.pop();
+        LLVMBuildBr(builder,beginLabel);
+        LLVMPositionBuilderAtEnd(builder,falseLabel);
+        LLVMBuildBr(builder,endLabel);
+        LLVMPositionBuilderAtEnd(builder,endLabel);
+
+        return null;
+    }
+
+    @Override
+    public LLVMValueRef visitStmt3(SysYParser.Stmt3Context ctx) {
+        LLVMBuildBr(builder,breakLabel.peek());
+        return null;
+    }
+
+    @Override
+    public LLVMValueRef visitStmt4(SysYParser.Stmt4Context ctx) {
+        LLVMBuildBr(builder,continueLabel.peek());
+        return null;
+    }
+
+    @Override
+    public LLVMValueRef visitCond1(SysYParser.Cond1Context ctx) {
+        return super.visitCond1(ctx);
+    }
+
+    @Override
+    public LLVMValueRef visitOr(SysYParser.OrContext ctx) {
+        LLVMValueRef lhs = visit(ctx.cond(0));  // Evaluate left-hand side
+
+        // Create blocks for true, false, and the rest of the evaluation
+        LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("or.true"));
+        LLVMBasicBlockRef falseLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("or.false"));
+        LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("or.end"));
+
+        // Allocate a temporary variable to hold the result
+        LLVMValueRef resultVar = LLVMBuildAlloca(builder, LLVMInt1Type(), "result");
+
+        // Compare lhs with true (1) and branch to the appropriate block
+        LLVMBuildCondBr(builder, lhs, trueLabel, falseLabel);
+
+        LLVMPositionBuilderAtEnd(builder, trueLabel);
+        LLVMBuildStore(builder, LLVMConstInt(LLVMInt1Type(), 1, 0), resultVar);
+        LLVMBuildBr(builder, endLabel);
+
+        LLVMPositionBuilderAtEnd(builder, falseLabel);
+        LLVMValueRef rhs = visit(ctx.cond(1));  // Evaluate right-hand side
+        LLVMBuildStore(builder, rhs, resultVar);
+        LLVMBuildBr(builder, endLabel);
+
+        LLVMPositionBuilderAtEnd(builder, endLabel);
+
+        return LLVMBuildLoad(builder, resultVar, "result");
+    }
+
+
+    @Override
+    public LLVMValueRef visitAnd(SysYParser.AndContext ctx) {
+        LLVMValueRef lhs = visit(ctx.cond(0));  // Evaluate left-hand side
+
+        LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("and.true"));
+        LLVMBasicBlockRef falseLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("and.false"));
+        LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("and.end"));
+
+        LLVMValueRef resultVar = LLVMBuildAlloca(builder, LLVMInt1Type(), "result");
+
+        LLVMBuildCondBr(builder, lhs, trueLabel, falseLabel);
+
+        LLVMPositionBuilderAtEnd(builder, trueLabel);
+        LLVMValueRef rhs = visit(ctx.cond(1));  // Evaluate right-hand side
+        LLVMBuildStore(builder, rhs, resultVar);
+        LLVMBuildBr(builder, endLabel);
+
+        LLVMPositionBuilderAtEnd(builder, falseLabel);
+        LLVMBuildStore(builder, LLVMConstInt(LLVMInt1Type(), 0, 0), resultVar);
+        LLVMBuildBr(builder, endLabel);
+
+        LLVMPositionBuilderAtEnd(builder, endLabel);
+
+        return LLVMBuildLoad(builder, resultVar, "result");
+    }
+
+
+    @Override
+    public LLVMValueRef visitCom(SysYParser.ComContext ctx) {
+        LLVMValueRef lhs = visit(ctx.cond(0));
+        LLVMValueRef rhs = visit(ctx.cond(1));
+        LLVMValueRef cmp;
+        if(ctx.GT()!=null){
+            cmp = LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "cmptmp");
+        }else if(ctx.GE()!=null){
+            cmp = LLVMBuildICmp(builder, LLVMIntSGE, lhs, rhs, "cmptmp");
+        }else if(ctx.LT()!=null){
+            cmp = LLVMBuildICmp(builder, LLVMIntSLT, lhs, rhs, "cmptmp");
+        }else {
+            cmp = LLVMBuildICmp(builder, LLVMIntSLE, lhs, rhs, "cmptmp");
+        }
+        LLVMValueRef zext = LLVMBuildZExt(builder, cmp, LLVMInt32Type(), "zexttmp");
+
+        // 生成 icmp ne 指令，比较扩展结果是否不等于 0
+        LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
+        return  LLVMBuildICmp(builder, LLVMIntEQ, zero, zext, "finalcmp");
+    }
+
+    @Override
+    public LLVMValueRef visitEqOrNor(SysYParser.EqOrNorContext ctx) {
+        LLVMValueRef lhs = visit(ctx.cond(0));
+        LLVMValueRef rhs = visit(ctx.cond(1));
+        // 生成等于或不等于的比较指令
+        LLVMValueRef cmp;
+        if (ctx.EQ() != null) {
+            cmp = LLVMBuildICmp(builder, LLVMIntEQ, lhs, rhs, "cmptmp");
+        } else {
+            cmp = LLVMBuildICmp(builder, LLVMIntNE, lhs, rhs, "cmptmp");
+        }
+
+        // 生成 zext 指令，将比较结果从 i1 扩展到 i32
+        LLVMValueRef zext = LLVMBuildZExt(builder, cmp, LLVMInt32Type(), "zexttmp");
+
+        // 生成 icmp ne 指令，比较扩展结果是否不等于 0
+        LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
+        LLVMValueRef finalCmp;
+        if(ctx.EQ()!=null){
+            finalCmp = LLVMBuildICmp(builder, LLVMIntEQ, zero, zext, "finalcmp");
+        }else{
+            finalCmp = LLVMBuildICmp(builder, LLVMIntNE, zero, zext, "finalcmp");
+        }
+
+        return finalCmp;
     }
 
     @Override
@@ -276,5 +435,9 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     public LLVMValueRef visitLVal(SysYParser.LValContext ctx) {
         LLVMValueRef value = currentScope.resolve(ctx.IDENT().getText());
         return LLVMBuildLoad(builder, value, ctx.IDENT().getText());
+    }
+
+    private String getNewLabel(String label){
+        return label+idx;
     }
 }
