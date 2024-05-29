@@ -13,6 +13,8 @@ import static org.bytedeco.llvm.global.LLVM.*;
 public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMModuleRef module;
     private LLVMBuilderRef builder;
+
+    private LLVMValueRef currentFunction;
     LLVMTypeRef i32Type;
 
     ArrayList<Type> temTable = new ArrayList<>();
@@ -114,6 +116,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             visit(ctx.blockItem(i));
         }
         currentScope = scope.getEnclosingScope();
+        currentFunction = null;
         return null;
     }
 
@@ -144,6 +147,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             Type pram = new Type(ctx.funcFParams().funcFParam(i).IDENT().getText(), pointer);
             temTable.add(pram);
         }
+        currentFunction = function;
         visitBlock(ctx.block());
         return function;
     }
@@ -154,6 +158,19 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef value = visit(ctx.exp());
         LLVMBuildStore(builder, value, lastValue);
         return null;
+    }
+
+    @Override
+    public LLVMValueRef visitIfStmt(SysYParser.IfStmtContext ctx) {
+        LLVMValueRef cond = visit(ctx.cond());
+        return super.visitIfStmt(ctx);
+    }
+
+
+
+    @Override
+    public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
+        return super.visitWhileStmt(ctx);
     }
 
     @Override
@@ -207,9 +224,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef function = functions.get(functionName);
 
         // Build the function call instruction
-        return LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "retValue");
+        return LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "returnValue");
     }
-
 
     @Override
     public LLVMValueRef visitExp3(SysYParser.Exp3Context ctx) {

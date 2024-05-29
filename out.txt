@@ -1,8 +1,6 @@
 ; ModuleID = 'module'
 source_filename = "module"
 
-@a = global i32 0
-
 define i32 @f(i32 %0) {
 fEntry:
   %i = alloca i32, align 4
@@ -16,6 +14,15 @@ mainEntry:
   %a = alloca i32, align 4
   store i32 1, i32* %a, align 4
   %a1 = load i32, i32* %a, align 4
-  %retValue = call i32 @f(i32 %a1)
-  ret i32 %retValue
+  %addtmp = add i32 %a1, 1
+  br i32 %addtmp, label %ifTrue, label %ifFalse
+  %a2 = load i32, i32* %a, align 4
+  %addtmp3 = add i32 %a2, 1
+  ret i32 0
+
+ifTrue:                                           ; preds = %mainEntry
+
+ifFalse:                                          ; preds = %mainEntry
+
+end:                                              ; No predecessors!
 }
