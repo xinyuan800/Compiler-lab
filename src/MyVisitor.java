@@ -129,7 +129,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitFuncDef(SysYParser.FuncDefContext ctx) {
-        LLVMTypeRef returnType = i32Type;
+        LLVMTypeRef returnType = i32Type;;
+        if(ctx.funcType().VOID()!=null){
+            returnType = LLVMVoidType();
+        }
+
         int funcRCount = 0;
         PointerPointer<Pointer> argumentTypes = new PointerPointer<>(funcRCount);
         if (ctx.funcFParams() != null) {
@@ -334,8 +338,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitStmt5(SysYParser.Stmt5Context ctx) {
-        LLVMValueRef result = visit(ctx.exp()); // 获取exp的结果
-        LLVMBuildRet(builder, result); // 使用result作为返回值
+        if(ctx.exp()!=null){
+            LLVMValueRef result = visit(ctx.exp()); // 获取exp的结果
+            LLVMBuildRet(builder, result); // 使用result作为返回值
+        }else{
+            LLVMBuildRetVoid(builder);
+        }
         return null;
     }
 
