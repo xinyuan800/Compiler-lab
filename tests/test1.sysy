@@ -1,15 +1,10 @@
+int f(int i){
+    return i;
+}
+
 int main(){
-    int a=0;
-    int count=0;
-    while(a<=0){
-        while(a<-10){
-          count = count + 1;
-          a = a-2;
-        }
-        a=a-1;
-        count=count+1;
-        if(a<-20)
-            break;
-    }
-    return count;
+    int a = 1;
+    int b;
+    b = f(a);
+    return f(a);
 }
