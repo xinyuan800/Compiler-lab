@@ -67,11 +67,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-            LLVMValueRef n = zero;
+            LLVMValueRef n = visit(ctx.constInitVal());
             //创建一个常量,这里是常数0
-            if(ctx.constInitVal()!=null){
-                n = visit(ctx.constInitVal());
-            }
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -80,11 +77,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-            LLVMValueRef n = zero;
-            //创建一个常量,这里是常数0
-            if(ctx.constInitVal()!=null){
-                n = visit(ctx.constInitVal());
-            }
+            LLVMValueRef n = visit(ctx.constInitVal());
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
@@ -211,28 +204,28 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        LLVMBasicBlockRef whileCondition= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileCondition"));
-        LLVMBasicBlockRef whileBody= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileBody"));
-        LLVMBasicBlockRef endLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
-        LLVMBuildBr(builder,whileCondition);
-        LLVMPositionBuilderAtEnd(builder,whileCondition);
-        LLVMValueRef cond = visit(ctx.cond());
-        LLVMTypeRef type = LLVMTypeOf(cond);
-        int bitWidth = LLVMGetIntTypeWidth(type);
-        if(bitWidth==32){
-            cond = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond");
-        }
-        LLVMBuildCondBr(builder,cond,whileBody,endLabel);
-        breakLabel.push(endLabel);
-        continueLabel.push(whileCondition);
-        LLVMPositionBuilderAtEnd(builder,whileBody);
-        visit(ctx.stmt());
-        breakLabel.pop();
-        continueLabel.pop();
-        LLVMBuildBr(builder,whileCondition);
-        LLVMPositionBuilderAtEnd(builder,endLabel);
-
-        return null;
+//        LLVMBasicBlockRef whileCondition= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileCondition"));
+//        LLVMBasicBlockRef whileBody= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileBody"));
+//        LLVMBasicBlockRef endLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
+//        LLVMBuildBr(builder,whileCondition);
+//        LLVMPositionBuilderAtEnd(builder,whileCondition);
+//        LLVMValueRef cond = visit(ctx.cond());
+//        LLVMTypeRef type = LLVMTypeOf(cond);
+//        int bitWidth = LLVMGetIntTypeWidth(type);
+//        if(bitWidth==32){
+//            cond = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond");
+//        }
+//        LLVMBuildCondBr(builder,cond,whileBody,endLabel);
+//        breakLabel.push(endLabel);
+//        continueLabel.push(whileCondition);
+//        LLVMPositionBuilderAtEnd(builder,whileBody);
+//        visit(ctx.stmt());
+//        breakLabel.pop();
+//        continueLabel.pop();
+//        LLVMBuildBr(builder,whileCondition);
+//        LLVMPositionBuilderAtEnd(builder,endLabel);
+//
+            return null;
     }
 
     @Override
