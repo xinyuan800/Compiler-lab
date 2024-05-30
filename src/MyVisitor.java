@@ -235,7 +235,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCond1(SysYParser.Cond1Context ctx) {
-        return super.visitCond1(ctx);
+        LLVMValueRef value = visit(ctx.exp());
+        return LLVMBuildICmp(builder, LLVMIntNE, zero, value, "finalcmp");
     }
 
     @Override
@@ -297,8 +298,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCom(SysYParser.ComContext ctx) {
-        LLVMValueRef lhs = visit(ctx.cond(0));
-        LLVMValueRef rhs = visit(ctx.cond(1));
+        LLVMValueRef lhs = LLVMBuildZExt(builder, visit(ctx.cond(0)), LLVMInt32Type(), "zexttmp");
+        LLVMValueRef rhs = LLVMBuildZExt(builder, visit(ctx.cond(1)), LLVMInt32Type(), "zexttmp");
         LLVMValueRef cmp;
         if(ctx.GT()!=null){
             cmp = LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "cmptmp");
@@ -318,8 +319,8 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitEqOrNor(SysYParser.EqOrNorContext ctx) {
-        LLVMValueRef lhs = visit(ctx.cond(0));
-        LLVMValueRef rhs = visit(ctx.cond(1));
+        LLVMValueRef lhs = LLVMBuildZExt(builder, visit(ctx.cond(0)), LLVMInt32Type(), "zexttmp");
+        LLVMValueRef rhs = LLVMBuildZExt(builder, visit(ctx.cond(1)), LLVMInt32Type(), "zexttmp");
         // 生成等于或不等于的比较指令
         LLVMValueRef cmp;
         if (ctx.EQ() != null) {
