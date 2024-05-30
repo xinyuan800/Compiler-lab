@@ -1,7 +1,7 @@
 int main(){
     int a=0;
     int count=0;
-    if(a+1||count-a){
+    if((a+1)!=0){
     return a;
     }
     return count;

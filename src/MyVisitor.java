@@ -184,7 +184,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBasicBlockRef falseLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("false"));
         LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMBuildCondBr(builder,LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond"),trueLabel,falseLabel);
+        LLVMTypeRef type = LLVMTypeOf(cond);
+        int bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth==32){
+            cond = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond");
+        }
+        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
         LLVMPositionBuilderAtEnd(builder,trueLabel);
         visit(ctx.stmt(0));
         LLVMBuildBr(builder,endLabel);
@@ -206,7 +211,12 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildBr(builder,beginLabel);
         LLVMPositionBuilderAtEnd(builder,beginLabel);
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMBuildCondBr(builder,LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond"),trueLabel,falseLabel);
+        LLVMTypeRef type = LLVMTypeOf(cond);
+        int bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth==32){
+            cond = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond");
+        }
+        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
         breakLabel.push(falseLabel);
         continueLabel.push(trueLabel);
         LLVMPositionBuilderAtEnd(builder,trueLabel);
