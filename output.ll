@@ -4,14 +4,16 @@ source_filename = "module"
 @i = global i32 0
 @x = global i32 3
 
-define i32 @f(i32 %0) {
+define i32 @f(i32 %0, i32 %1) {
 fEntry:
   %x = alloca i32, align 4
   store i32 %0, i32* %x, align 4
-  %i = load i32, i32* @i, align 4
-  store i32 %i, i32* %x, align 4
-  %i1 = load i32, i32* @i, align 4
-  ret i32 %i1
+  %i = alloca i32, align 4
+  store i32 %1, i32* %i, align 4
+  %i1 = load i32, i32* %i, align 4
+  store i32 %i1, i32* %x, align 4
+  %i2 = load i32, i32* %i, align 4
+  ret i32 %i2
 }
 
 define i32 @main() {
