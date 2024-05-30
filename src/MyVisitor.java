@@ -207,28 +207,25 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitWhileStmt(SysYParser.WhileStmtContext ctx) {
-        LLVMBasicBlockRef beginLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("while.begin"));
-        LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("true"));
-        LLVMBasicBlockRef falseLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("false"));
-        LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
-        LLVMBuildBr(builder,beginLabel);
-        LLVMPositionBuilderAtEnd(builder,beginLabel);
+        LLVMBasicBlockRef whileCondition= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileCondition"));
+        LLVMBasicBlockRef whileBody= LLVMAppendBasicBlock(currentFunction,getNewLabel("whileBody"));
+        LLVMBasicBlockRef endLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
+        LLVMBuildBr(builder,whileCondition);
+        LLVMPositionBuilderAtEnd(builder,whileCondition);
         LLVMValueRef cond = visit(ctx.cond());
         LLVMTypeRef type = LLVMTypeOf(cond);
         int bitWidth = LLVMGetIntTypeWidth(type);
         if(bitWidth==32){
             cond = LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond");
         }
-        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
-        breakLabel.push(falseLabel);
-        continueLabel.push(trueLabel);
-        LLVMPositionBuilderAtEnd(builder,trueLabel);
+        LLVMBuildCondBr(builder,cond,whileBody,endLabel);
+        breakLabel.push(endLabel);
+        continueLabel.push(whileCondition);
+        LLVMPositionBuilderAtEnd(builder,whileBody);
         visit(ctx.stmt());
         breakLabel.pop();
         continueLabel.pop();
-        LLVMBuildBr(builder,beginLabel);
-        LLVMPositionBuilderAtEnd(builder,falseLabel);
-        LLVMBuildBr(builder,endLabel);
+        LLVMBuildBr(builder,whileCondition);
         LLVMPositionBuilderAtEnd(builder,endLabel);
 
         return null;

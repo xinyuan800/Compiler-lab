@@ -1,7 +1,15 @@
-void f(){
-
-}
 int main(){
-    f();
-    return 0;
+    int a=0;
+    int count=0;
+    while(a<=0){
+        while(a<-10){
+          count = count + 1;
+          a = a-2;
+        }
+        a=a-1;
+        count=count+1;
+        if(a<-20)
+            break;
+    }
+    return count;
 }
