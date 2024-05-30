@@ -22,7 +22,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMValueRef currentFunction;
 
     LLVMTypeRef i32Type;
-
+    private LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
     private Deque<LLVMBasicBlockRef> breakLabel = new ArrayDeque<>();
     private Deque<LLVMBasicBlockRef> continueLabel = new ArrayDeque<>();
     ArrayList<Type> temTable = new ArrayList<>();
@@ -70,7 +70,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-            LLVMValueRef n = visit(ctx.constInitVal());
+            LLVMValueRef n = zero;
+            //创建一个常量,这里是常数0
+            if(ctx.constInitVal()!=null){
+                n = visit(ctx.constInitVal());
+            }
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -79,7 +83,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-            LLVMValueRef n = visit(ctx.constInitVal());
+            LLVMValueRef n = zero;
+            //创建一个常量,这里是常数0
+            if(ctx.constInitVal()!=null){
+                n = visit(ctx.constInitVal());
+            }
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
@@ -94,7 +102,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
             //创建一个常量
-            LLVMValueRef n = visit(ctx.initVal());
+            LLVMValueRef n = zero;
+            if(ctx.initVal()!=null){
+              n = visit(ctx.initVal());
+            }
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -103,8 +114,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-            //创建一个常量,这里是常数0
-            LLVMValueRef n = visit(ctx.initVal());
+            LLVMValueRef n = zero;
+            if(ctx.initVal()!=null){
+              n = visit(ctx.initVal());
+            }
             //将数值存入该内存
             LLVMBuildStore(builder, n, pointer);
 
@@ -306,7 +319,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef zext = LLVMBuildZExt(builder, cmp, LLVMInt32Type(), "zexttmp");
 
         // 生成 icmp ne 指令，比较扩展结果是否不等于 0
-        LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
+
         return  LLVMBuildICmp(builder, LLVMIntEQ, zero, zext, "finalcmp");
     }
 

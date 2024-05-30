@@ -10,6 +10,8 @@ fEntry:
   store i32 %0, i32* %x, align 4
   %i = alloca i32, align 4
   store i32 %1, i32* %i, align 4
+  %j = alloca i32, align 4
+  store i32 0, i32* %j, align 4
   %i1 = load i32, i32* %i, align 4
   store i32 %i1, i32* %x, align 4
   %i2 = load i32, i32* %i, align 4
