@@ -1,7 +1,12 @@
-int x = 0;
-void f(int i,int x ){
-    i = i + x;
-    return ;
+int i = 0;
+int f(int i){
+    return i;
+}
+
+void print(int x){
+i = i+1;
+return;
+
 }
 
 int main(){

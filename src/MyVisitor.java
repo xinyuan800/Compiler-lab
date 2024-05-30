@@ -120,6 +120,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         for (int i = 0; i < temTable.size(); i++) {
             currentScope.define(temTable.get(i).getName(), temTable.get(i).getValue());
         }
+        temTable.clear();
         for (int i = 0; i < ctx.blockItem().size(); i++) {
             visit(ctx.blockItem(i));
         }
@@ -200,14 +201,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMPositionBuilderAtEnd(builder,beginLabel);
         LLVMValueRef cond = visit(ctx.cond());
         LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
-        breakLabel.push(falseLabel);
-        continueLabel.push(trueLabel);
-        LLVMPositionBuilderAtEnd(builder,trueLabel);
+        breakLabel.push(trueLabel);
+        continueLabel.push(falseLabel);
+        LLVMPositionBuilderAtEnd(builder,falseLabel);
         visit(ctx.stmt());
         breakLabel.pop();
         continueLabel.pop();
         LLVMBuildBr(builder,beginLabel);
-        LLVMPositionBuilderAtEnd(builder,falseLabel);
+        LLVMPositionBuilderAtEnd(builder,trueLabel);
         LLVMBuildBr(builder,endLabel);
         LLVMPositionBuilderAtEnd(builder,endLabel);
 
