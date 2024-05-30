@@ -1,5 +1,6 @@
-void f(int i){
-    i = 2;
+int x = 0;
+void f(int i,int x ){
+    i = i + x;
     return ;
 }
 
