@@ -15,7 +15,7 @@ JAVA = java
 PFILE = $(shell find . -name "SysYParser.g4")
 LFILE = $(shell find . -name "SysYLexer.g4")
 JAVAFILE = $(shell find . -name "*.java")
-
+OUTPUTPATH = output.ll
 compile: antlr
 	$(call git_commit,"make")
 	mkdir -p classes
@@ -42,5 +42,8 @@ clean:
 submit: clean
 	git gc
 	bash submit.sh
+
+runll:
+	lli $(OUTPUTPATH); echo $$?
 
 .PHONY: compile antlr test run clean submit

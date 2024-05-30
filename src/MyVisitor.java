@@ -167,7 +167,10 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         }
         currentFunction = function;
         visitBlock(ctx.block());
-        return function;
+        if(!returnType.equals(i32Type)){
+            LLVMBuildRetVoid(builder);
+        }
+        return null;
     }
 
     @Override
@@ -357,8 +360,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         if(ctx.exp()!=null){
             LLVMValueRef result = visit(ctx.exp()); // 获取exp的结果
             LLVMBuildRet(builder, result); // 使用result作为返回值
-        }else{
-            LLVMBuildRetVoid(builder);
         }
         return null;
     }
