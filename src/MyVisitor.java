@@ -1,10 +1,8 @@
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
-import org.bytedeco.llvm.presets.LLVM;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -22,7 +20,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     private LLVMValueRef currentFunction;
 
     LLVMTypeRef i32Type;
-    private LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
+    private final LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
     private Deque<LLVMBasicBlockRef> breakLabel = new ArrayDeque<>();
     private Deque<LLVMBasicBlockRef> continueLabel = new ArrayDeque<>();
     ArrayList<Type> temTable = new ArrayList<>();
@@ -54,7 +52,6 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         globalScope = new Scope(null);
         currentScope = globalScope;
         visitCompUnit(ctx.compUnit());
-
         return null;
     }
 
@@ -70,11 +67,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-            LLVMValueRef n = zero;
-            //创建一个常量,这里是常数0
-            if(ctx.constInitVal()!=null){
-                n = visit(ctx.constInitVal());
-            }
+            LLVMValueRef n = visit(ctx.constInitVal());
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
@@ -388,9 +381,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitFunCall(SysYParser.FunCallContext ctx) {
         ArrayList<LLVMValueRef> args = new ArrayList<>();
-        for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
-            // Visit each parameter node individually
-            args.add(visit(ctx.funcRParams().param(i)));
+        if(ctx.funcRParams()!=null){
+            for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
+                // Visit each parameter node individually
+                args.add(visit(ctx.funcRParams().param(i)));
+            }
         }
 
         // Convert ArrayList<LLVMValueRef> to LLVMValueRef[]
