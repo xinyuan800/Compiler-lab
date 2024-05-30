@@ -67,7 +67,11 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
 
-            LLVMValueRef n = visit(ctx.constInitVal());
+            LLVMValueRef n = zero;
+            //创建一个常量,这里是常数0
+            if(ctx.constInitVal()!=null){
+                n = visit(ctx.constInitVal());
+            }
             //为全局变量设置初始化器
             LLVMSetInitializer(globalVar, /* constantVal:LLVMValueRef*/n);
 
