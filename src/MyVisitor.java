@@ -184,7 +184,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBasicBlockRef falseLabel= LLVMAppendBasicBlock(currentFunction,getNewLabel("false"));
         LLVMBasicBlockRef endLabel = LLVMAppendBasicBlock(currentFunction,getNewLabel("end"));
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
+        LLVMBuildCondBr(builder,LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond"),trueLabel,falseLabel);
         LLVMPositionBuilderAtEnd(builder,trueLabel);
         visit(ctx.stmt(0));
         LLVMBuildBr(builder,endLabel);
@@ -206,7 +206,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildBr(builder,beginLabel);
         LLVMPositionBuilderAtEnd(builder,beginLabel);
         LLVMValueRef cond = visit(ctx.cond());
-        LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
+        LLVMBuildCondBr(builder,LLVMBuildICmp(builder, LLVMIntNE, zero, cond, "cond"),trueLabel,falseLabel);
         breakLabel.push(falseLabel);
         continueLabel.push(trueLabel);
         LLVMPositionBuilderAtEnd(builder,trueLabel);
@@ -240,8 +240,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitOr(SysYParser.OrContext ctx) {
-        LLVMValueRef lhs = visit(ctx.cond(0));  // Evaluate left-hand side
-
+        LLVMValueRef lhs = LLVMBuildICmp(builder, LLVMIntNE, zero, visit(ctx.cond(0)), "lhs");
         // Create blocks for true, false, and the rest of the evaluation
         LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("or.true"));
         LLVMBasicBlockRef falseLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("or.false"));
@@ -258,7 +257,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildBr(builder, endLabel);
 
         LLVMPositionBuilderAtEnd(builder, falseLabel);
-        LLVMValueRef rhs = visit(ctx.cond(1));  // Evaluate right-hand side
+        LLVMValueRef rhs = LLVMBuildICmp(builder, LLVMIntNE, zero, visit(ctx.cond(1)), "lhs");
         LLVMBuildStore(builder, rhs, resultVar);
         LLVMBuildBr(builder, endLabel);
 
@@ -270,7 +269,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitAnd(SysYParser.AndContext ctx) {
-        LLVMValueRef lhs = visit(ctx.cond(0));  // Evaluate left-hand side
+        LLVMValueRef lhs = LLVMBuildICmp(builder, LLVMIntNE, zero, visit(ctx.cond(0)), "lhs");  // Evaluate left-hand side
 
         LLVMBasicBlockRef trueLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("and.true"));
         LLVMBasicBlockRef falseLabel = LLVMAppendBasicBlock(currentFunction, getNewLabel("and.false"));
@@ -281,7 +280,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMBuildCondBr(builder, lhs, trueLabel, falseLabel);
 
         LLVMPositionBuilderAtEnd(builder, trueLabel);
-        LLVMValueRef rhs = visit(ctx.cond(1));  // Evaluate right-hand side
+        LLVMValueRef rhs = LLVMBuildICmp(builder, LLVMIntNE, zero, visit(ctx.cond(1)), "lhs");  // Evaluate left-hand side
         LLVMBuildStore(builder, rhs, resultVar);
         LLVMBuildBr(builder, endLabel);
 
