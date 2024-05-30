@@ -235,8 +235,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCond1(SysYParser.Cond1Context ctx) {
-        LLVMValueRef value = visit(ctx.exp());
-        return LLVMBuildICmp(builder, LLVMIntNE, zero, value, "finalcmp");
+        return visit(ctx.exp());
     }
 
     @Override
