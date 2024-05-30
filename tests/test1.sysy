@@ -1,15 +1,7 @@
+void f(){
+
+}
 int main(){
-    int a=0;
-    int count=0;
-    while(a<=0){
-        a=a-1;
-        count=count+1;
-        while(count<100){
-           count = count + 30;
-           if(count > 90){
-              return count;
-           }
-           }
-        }
-    return count;
+    f();
+    return 0;
 }

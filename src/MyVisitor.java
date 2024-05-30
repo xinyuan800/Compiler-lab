@@ -391,7 +391,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
     @Override
     public LLVMValueRef visitFunCall(SysYParser.FunCallContext ctx) {
         ArrayList<LLVMValueRef> args = new ArrayList<>();
-        if(ctx.funcRParams()!=null){
+        if(ctx.funcRParams() != null) {
             for (int i = 0; i < ctx.funcRParams().param().size(); i++) {
                 // Visit each parameter node individually
                 args.add(visit(ctx.funcRParams().param(i)));
@@ -409,9 +409,17 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         String functionName = ctx.IDENT().getText();
         LLVMValueRef function = functions.get(functionName);
 
-        // Build the function call instruction
-        return LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "returnValue");
+        // Check if the function return type is void
+        if (LLVMGetReturnType(LLVMGetElementType(LLVMTypeOf(function))).equals(LLVMVoidType())) {
+            // Build the function call instruction without storing the return value
+            LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "");
+            return null; // No return value for void functions
+        } else {
+            // Build the function call instruction and store the return value
+            return LLVMBuildCall(builder, function, argsPointer, llvmValueArray.length, "returnValue");
+        }
     }
+
 
     @Override
     public LLVMValueRef visitExp3(SysYParser.Exp3Context ctx) {
