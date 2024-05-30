@@ -207,14 +207,14 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMPositionBuilderAtEnd(builder,beginLabel);
         LLVMValueRef cond = visit(ctx.cond());
         LLVMBuildCondBr(builder,cond,trueLabel,falseLabel);
-        breakLabel.push(trueLabel);
-        continueLabel.push(falseLabel);
-        LLVMPositionBuilderAtEnd(builder,falseLabel);
+        breakLabel.push(falseLabel);
+        continueLabel.push(trueLabel);
+        LLVMPositionBuilderAtEnd(builder,trueLabel);
         visit(ctx.stmt());
         breakLabel.pop();
         continueLabel.pop();
         LLVMBuildBr(builder,beginLabel);
-        LLVMPositionBuilderAtEnd(builder,trueLabel);
+        LLVMPositionBuilderAtEnd(builder,falseLabel);
         LLVMBuildBr(builder,endLabel);
         LLVMPositionBuilderAtEnd(builder,endLabel);
 
@@ -313,7 +313,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
         // 生成 icmp ne 指令，比较扩展结果是否不等于 0
 
-        return  LLVMBuildICmp(builder, LLVMIntEQ, zero, zext, "finalcmp");
+        return  LLVMBuildICmp(builder, LLVMIntNE, zero, zext, "finalcmp");
     }
 
     @Override

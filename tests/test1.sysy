@@ -1,18 +1,10 @@
-int x = 3;
-int i;
-const int j = 3;
-void f(int x,int i){
-    int j = x;
-    x = x - j;
-    return ;
+int main(){
+    int a=0;
+    int count=0;
+    if(a>0||count>0){
+      return a;
+    }else{
+    return count;
+    }
+    return 0;
 }
-int w(){
-return 0;
-}
-int main(int i){
-int j = x;
-int a = w();
-return a;
-
-}
-
