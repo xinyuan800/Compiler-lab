@@ -1,16 +1,28 @@
-int i,j=1,k=2;
-int com(int i,int j){
-if((i+1)<j){
-return 0;
-}
-return -1;
+int factorial(int n) {
+    int result;
+    int i = 1;
+
+    // 外层while循环：从1到n
+    while (i <= n) {
+        int j = i;
+        int temp = 1;
+
+        // 内层while循环：计算当前i的乘积
+        while (j > 0) {
+            temp = temp * j;
+
+            j=j-1;
+        }
+            if(temp==2){
+                break;
+            }
+        result = result + temp;
+        i=i+1;
+    }
+
+    return result;
 }
 int main(){
-    int a=1;
-    int count=0;
-    count = a + com(count,a);
-    return com(count,a);
-}
-int b(){
-    return main();
+    int a = 5;
+    return factorial(a);
 }

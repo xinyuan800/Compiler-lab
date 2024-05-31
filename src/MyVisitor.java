@@ -379,15 +379,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
         LLVMValueRef zext = LLVMBuildZExt(builder, cmp, LLVMInt32Type(), "zexttmp");
 
         // 生成 icmp ne 指令，比较扩展结果是否不等于 0
-        LLVMValueRef zero = LLVMConstInt(LLVMInt32Type(), 0, 0);
-        LLVMValueRef finalCmp;
-        if(ctx.EQ()!=null){
-            finalCmp = LLVMBuildICmp(builder, LLVMIntEQ, zero, zext, "finalcmp");
-        }else{
-            finalCmp = LLVMBuildICmp(builder, LLVMIntNE, zero, zext, "finalcmp");
-        }
-
-        return finalCmp;
+        return LLVMBuildICmp(builder, LLVMIntNE, zero, zext, "finalcmp");
     }
 
     @Override
