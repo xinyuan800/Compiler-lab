@@ -1,19 +1,15 @@
-int main() {
-    int x = 0;
-    int y = 0;
-    int z = 0;
-    int count = 0;
-
-    while (x <= 2) {
-        while (y <= 2) {
-            count = count + 1;
-            y = y+1;
-            if(1){
-                break;
-            }
+int main(){
+    int a=0;
+    int count=0;
+    while(a<=0){
+        a=a-1;
+        count=count+1;
+        while(a<=0&&a>-3){
+            count = count * 2;
+            a = a - 1;
         }
-        x = x+1;
+        if(a<-20)
+            break;
     }
-
     return count;
 }
