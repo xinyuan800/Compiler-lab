@@ -93,7 +93,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
             //创建一个常量
-            LLVMValueRef n = zero;
+            LLVMValueRef n = null;
             if(ctx.initVal()!=null){
               n = visit(ctx.initVal());
             }
@@ -105,7 +105,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-            LLVMValueRef n = zero;
+            LLVMValueRef n = null;
             if(ctx.initVal()!=null){
               n = visit(ctx.initVal());
             }
