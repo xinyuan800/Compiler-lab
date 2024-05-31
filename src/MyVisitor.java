@@ -93,7 +93,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //创建名为globalVar的全局变量
             LLVMValueRef globalVar = LLVMAddGlobal(module, i32Type, /*globalVarName:String*/ctx.IDENT().getText());
             //创建一个常量
-            LLVMValueRef n = null;
+            LLVMValueRef n = zero;
             if(ctx.initVal()!=null){
               n = visit(ctx.initVal());
             }
@@ -105,7 +105,7 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
             //int型变量
             //申请一块能存放int型的内存
             LLVMValueRef pointer = LLVMBuildAlloca(builder, i32Type, /*pointerName:String*/ctx.IDENT().getText());
-            LLVMValueRef n = null;
+            LLVMValueRef n = zero;
             if(ctx.initVal()!=null){
               n = visit(ctx.initVal());
             }
@@ -324,8 +324,18 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitCom(SysYParser.ComContext ctx) {
-        LLVMValueRef lhs = LLVMBuildZExt(builder, visit(ctx.cond(0)), LLVMInt32Type(), "zexttmp");
-        LLVMValueRef rhs = LLVMBuildZExt(builder, visit(ctx.cond(1)), LLVMInt32Type(), "zexttmp");
+        LLVMValueRef lhs = visit(ctx.cond(0));
+        LLVMTypeRef type = LLVMTypeOf(lhs);
+        int bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth!=32){
+            lhs = LLVMBuildZExt(builder, lhs, LLVMInt32Type(), "zexttmp");
+        }
+        LLVMValueRef rhs = visit(ctx.cond(1));
+        type = LLVMTypeOf(lhs);
+        bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth!=32){
+            rhs = LLVMBuildZExt(builder, rhs, LLVMInt32Type(), "zexttmp");
+        }
         LLVMValueRef cmp;
         if(ctx.GT()!=null){
             cmp = LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "cmptmp");
@@ -345,8 +355,18 @@ public class MyVisitor extends SysYParserBaseVisitor<LLVMValueRef> {
 
     @Override
     public LLVMValueRef visitEqOrNor(SysYParser.EqOrNorContext ctx) {
-        LLVMValueRef lhs = LLVMBuildZExt(builder, visit(ctx.cond(0)), LLVMInt32Type(), "zexttmp");
-        LLVMValueRef rhs = LLVMBuildZExt(builder, visit(ctx.cond(1)), LLVMInt32Type(), "zexttmp");
+        LLVMValueRef lhs = visit(ctx.cond(0));
+        LLVMTypeRef type = LLVMTypeOf(lhs);
+        int bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth!=32){
+            lhs = LLVMBuildZExt(builder, lhs, LLVMInt32Type(), "zexttmp");
+        }
+        LLVMValueRef rhs = visit(ctx.cond(1));
+        type = LLVMTypeOf(lhs);
+        bitWidth = LLVMGetIntTypeWidth(type);
+        if(bitWidth!=32){
+            rhs = LLVMBuildZExt(builder, rhs, LLVMInt32Type(), "zexttmp");
+        }
         // 生成等于或不等于的比较指令
         LLVMValueRef cmp;
         if (ctx.EQ() != null) {
